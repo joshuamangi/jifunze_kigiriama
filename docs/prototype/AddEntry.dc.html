@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jifunze Kigiriama — Add Entry</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg-dark: hsl(228 79% 2%); --bg: hsl(222 55% 5%); --bg-light: hsl(220 35% 10%);
+  --text: hsl(220 100% 98%); --text-muted: hsl(220 35% 73%); --highlight: hsl(220 20% 42%);
+  --border: hsl(220 26% 31%); --border-muted: hsl(220 37% 20%);
+  --primary: hsl(220 78% 76%); --secondary: hsl(40 53% 60%);
+  --danger: hsl(9 26% 64%); --warning: hsl(52 19% 57%); --success: hsl(146 17% 59%); --info: hsl(217 28% 65%);
+  --bg-dark: oklch(0.1 0.025 264); --bg: oklch(0.15 0.025 264); --bg-light: oklch(0.2 0.025 264);
+  --text: oklch(0.96 0.05 264); --text-muted: oklch(0.76 0.05 264); --highlight: oklch(0.5 0.05 264);
+  --border: oklch(0.4 0.05 264); --border-muted: oklch(0.3 0.05 264);
+  --primary: oklch(0.76 0.1 264); --secondary: oklch(0.76 0.1 84);
+  --danger: oklch(0.7 0.05 30); --warning: oklch(0.7 0.05 100); --success: oklch(0.7 0.05 160); --info: oklch(0.7 0.05 260);
+}
+.theme-root.light{
+  --bg-dark: hsl(220 59% 91%); --bg: hsl(220 100% 97%); --bg-light: hsl(220 100% 100%);
+  --text: hsl(226 85% 7%); --text-muted: hsl(220 26% 31%); --highlight: hsl(220 100% 100%);
+  --border: hsl(220 19% 53%); --border-muted: hsl(220 27% 65%);
+  --primary: hsl(221 49% 33%); --secondary: hsl(44 100% 14%);
+  --danger: hsl(9 21% 41%); --warning: hsl(52 23% 34%); --success: hsl(147 19% 36%); --info: hsl(217 22% 41%);
+  --bg-dark: oklch(0.92 0.025 264); --bg: oklch(0.96 0.025 264); --bg-light: oklch(1 0.025 264);
+  --text: oklch(0.15 0.05 264); --text-muted: oklch(0.4 0.05 264); --highlight: oklch(1 0.05 264);
+  --border: oklch(0.6 0.05 264); --border-muted: oklch(0.7 0.05 264);
+  --primary: oklch(0.4 0.1 264); --secondary: oklch(0.4 0.1 84);
+  --danger: oklch(0.5 0.05 30); --warning: oklch(0.5 0.05 100); --success: oklch(0.5 0.05 160); --info: oklch(0.5 0.05 260);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Kodchasan',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
+.serif{font-family:'Kodchasan',system-ui,sans-serif;font-weight:600;}
+a{text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+input,textarea{font-family:inherit;}
+input::placeholder,textarea::placeholder{color:var(--text-muted);opacity:.7;}
+</style>
+</helmet>
+
+<div class="theme-root {{themeClass}}" style="min-height:100vh;background:var(--bg);color:var(--text);display:flex;flex-direction:column;">
+
+  <div style="position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border-muted);">
+    <div class="serif" style="font-size:19px;font-weight:600;">Add entry</div>
+    <button onClick="{{toggleTheme}}" aria-label="Toggle color theme" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--bg-light);color:var(--text);display:flex;align-items:center;justify-content:center;">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{true}}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="17" height="17"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>
+      </sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{false}}">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5Z"/></svg>
+      </sc-if>
+    </button>
+  </div>
+
+  <div style="flex:1 1 auto;width:100%;max-width:480px;margin:0 auto;padding:22px 20px 110px;">
+
+    <sc-if value="{{hasSuggestion}}" hint-placeholder-val="{{true}}">
+      <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg-light);border:1px solid var(--primary);border-radius:12px;padding:13px 14px;margin-bottom:18px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="flex-shrink:0;margin-top:1px;"><path d="M9 18h6M10 21h4M8 14a4 4 0 1 1 8 0c0 1.8-1 2.6-1.5 3.3-.3.4-.5.7-.5 1.2h-4c0-.5-.2-.8-.5-1.2C9 16.6 8 15.8 8 14Z"/></svg>
+        <div style="font-size:13px;color:var(--text);line-height:1.45;">Today's gap: you have no <b>{{suggestedLabel}}</b> entries yet — the form below is set to that group, ready to go.</div>
+      </div>
+    </sc-if>
+
+    <div style="background:var(--bg-light);border:1px solid var(--border-muted);border-radius:16px;padding:18px;margin-bottom:22px;">
+      <div class="serif" style="font-size:16px;font-weight:600;margin-bottom:14px;">Add a new entry</div>
+
+      <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Giriama text or phrase</label>
+      <input type="text" value="{{giryamaDraft}}" onChange="{{handleGiryamaChange}}" placeholder="e.g. mwenga" style="width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;margin-bottom:13px;"/>
+
+      <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">English meaning</label>
+      <textarea rows="2" value="{{englishDraft}}" onChange="{{handleEnglishChange}}" placeholder="e.g. one" style="width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;margin-bottom:15px;resize:vertical;"></textarea>
+
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:7px;">Word group</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px;">
+        <sc-for list="{{categoryFormOptions}}" as="opt" hint-placeholder-count="5">
+          <button onClick="{{opt.pick}}" style="padding:7px 13px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid {{opt.borderColor}};background:{{opt.bg}};color:{{opt.color}};">{{opt.label}}</button>
+        </sc-for>
+      </div>
+
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:7px;">Source</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:17px;">
+        <sc-for list="{{sourceOptions}}" as="opt" hint-placeholder-count="4">
+          <button onClick="{{opt.pick}}" style="padding:7px 13px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid {{opt.borderColor}};background:{{opt.bg}};color:{{opt.color}};">{{opt.label}}</button>
+        </sc-for>
+      </div>
+
+      <button onClick="{{saveEntry}}" style="width:100%;padding:13px;border-radius:12px;border:none;background:var(--primary);color:var(--bg-dark);font-size:15px;font-weight:600;">Save entry</button>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:11px;line-height:1.5;">Your entries build your personal study set — this is what tomorrow's spaced-repetition review pulls from, and what gets embedded into the semantic search index.</div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;background:var(--bg-light);border:1px solid var(--border-muted);border-radius:12px;padding:10px 13px;margin-bottom:6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round" width="17" height="17"><circle cx="10.5" cy="10.5" r="6"/><path d="M19 19l-4.3-4.3"/></svg>
+      <input type="text" value="{{query}}" onChange="{{handleQueryChange}}" placeholder="Search your entries by meaning" style="flex:1;border:none;background:transparent;color:var(--text);font-size:14px;outline:none;"/>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:16px;line-height:1.4;font-style:italic;">In this prototype, search matches text. In the real app, this becomes semantic search over embeddings stored in SQLite (via sqlite-vec) — so "animals" can surface an entry glossed "goat" even without the word "animal" in it.</div>
+
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Filter by group</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;">
+      <sc-for list="{{categoryFilterOptions}}" as="opt" hint-placeholder-count="6">
+        <button onClick="{{opt.pick}}" style="padding:6px 12px;border-radius:999px;font-size:11.5px;font-weight:500;border:1px solid {{opt.borderColor}};background:{{opt.bg}};color:{{opt.color}};">{{opt.label}}</button>
+      </sc-for>
+    </div>
+
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">{{summaryLine}}</div>
+
+    <sc-for list="{{filteredEntries}}" as="entry" hint-placeholder-count="3">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--bg-light);border:1px solid var(--border-muted);border-radius:12px;margin-bottom:9px;">
+        <div>
+          <div class="serif" style="font-size:17px;font-weight:600;color:var(--text);">{{entry.giryama}}</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:2px;">{{entry.english}}</div>
+          <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px;opacity:.75;">{{entry.type}}</div>
+        </div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--info);border:1px solid var(--border);padding:3px 9px;border-radius:999px;white-space:nowrap;">{{entry.categoryLabel}}</div>
+      </div>
+    </sc-for>
+
+    <sc-if value="{{hasNoResults}}" hint-placeholder-val="{{false}}">
+      <div style="text-align:center;padding:30px 16px;color:var(--text-muted);font-size:14px;">No entries match these filters yet.</div>
+    </sc-if>
+
+  </div>
+
+  <nav style="position:sticky;bottom:0;display:flex;background:var(--bg-light);border-top:1px solid var(--border-muted);padding:8px 4px;">
+    <a href="Main.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="21" height="21"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9.5a1 1 0 0 0 1-1v-4h3v4a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-9"/></svg>
+      Home
+    </a>
+    <a href="AddEntry.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--primary);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      Add
+    </a>
+    <a href="Learn.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="21" height="21"><path d="M12 6.5c-1.6-1.2-3.8-1.7-6-1.5v12c2.2-.2 4.4.3 6 1.5 1.6-1.2 3.8-1.7 6-1.5v-12c-2.2-.2-4.4.3-6 1.5Z"/><path d="M12 6.5v12"/></svg>
+      Learn
+    </a>
+    <a href="Culture.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><circle cx="12" cy="12" r="2.3"/><path d="M8.2 8.2a5.3 5.3 0 0 0 0 7.6M15.8 8.2a5.3 5.3 0 0 1 0 7.6M5.3 5.3a9.6 9.6 0 0 0 0 13.4M18.7 5.3a9.6 9.6 0 0 1 0 13.4"/></svg>
+      Culture
+    </a>
+    <a href="Settings.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><path d="M4 7h10M17 7h3M4 17h3M10 17h10"/><circle cx="14" cy="7" r="2.1"/><circle cx="7" cy="17" r="2.1"/></svg>
+      Settings
+    </a>
+  </nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      theme: 'dark',
+      giryamaDraft: '',
+      englishDraft: '',
+      sourceType: 'own',
+      categoryDraft: 'greetings',
+      categoryFilter: 'all',
+      query: '',
+      nextId: 4,
+      entries: [
+        { id: 1, giryama: 'mwenga', english: 'one', type: 'dictionary', category: 'numbers' },
+        { id: 2, giryama: 'hiri', english: 'two', type: 'dictionary', category: 'numbers' },
+        { id: 3, giryama: 'tsano', english: 'five', type: 'dictionary', category: 'numbers' }
+      ]
+    };
+  }
+
+  toggleTheme = () => this.setState({ theme: this.state.theme === 'light' ? 'dark' : 'light' });
+  handleGiryamaChange = (e) => this.setState({ giryamaDraft: e.target.value });
+  handleEnglishChange = (e) => this.setState({ englishDraft: e.target.value });
+  handleQueryChange = (e) => this.setState({ query: e.target.value });
+  selectSource = (type) => this.setState({ sourceType: type });
+  selectCategory = (cat) => this.setState({ categoryDraft: cat });
+  selectCategoryFilter = (cat) => this.setState({ categoryFilter: cat });
+
+  saveEntry = () => {
+    const g = this.state.giryamaDraft.trim();
+    const en = this.state.englishDraft.trim();
+    if (!g || !en) return;
+    const entry = { id: this.state.nextId, giryama: g, english: en, type: this.state.sourceType, category: this.state.categoryDraft };
+    this.setState({
+      entries: [entry, ...this.state.entries],
+      nextId: this.state.nextId + 1,
+      giryamaDraft: '',
+      englishDraft: '',
+      sourceType: 'own'
+    });
+  };
+
+  renderVals() {
+    const isLight = this.state.theme === 'light';
+
+    const categoryDefs = [
+      { id: 'greetings', label: 'Greetings' },
+      { id: 'family', label: 'Family' },
+      { id: 'numbers', label: 'Numbers' },
+      { id: 'proverbs', label: 'Proverbs' },
+      { id: 'food', label: 'Food' }
+    ];
+    const categoryLabelOf = {};
+    categoryDefs.forEach((c) => { categoryLabelOf[c.id] = c.label; });
+
+    const counts = {};
+    categoryDefs.forEach((c) => { counts[c.id] = 0; });
+    this.state.entries.forEach((e) => { if (counts[e.category] !== undefined) counts[e.category]++; });
+
+    let suggested = null;
+    for (const c of categoryDefs) {
+      if (counts[c.id] === 0) { suggested = c; break; }
+    }
+
+    const categoryFormOptions = categoryDefs.map((c) => {
+      const selected = this.state.categoryDraft === c.id;
+      return {
+        id: c.id,
+        label: c.label,
+        bg: selected ? 'var(--primary)' : 'var(--bg)',
+        color: selected ? 'var(--bg-dark)' : 'var(--text-muted)',
+        borderColor: selected ? 'var(--primary)' : 'var(--border)',
+        pick: () => this.selectCategory(c.id)
+      };
+    });
+
+    const filterDefs = [{ id: 'all', label: 'All' }].concat(categoryDefs);
+    const categoryFilterOptions = filterDefs.map((c) => {
+      const selected = this.state.categoryFilter === c.id;
+      return {
+        id: c.id,
+        label: c.label,
+        bg: selected ? 'var(--primary)' : 'var(--bg)',
+        color: selected ? 'var(--bg-dark)' : 'var(--text-muted)',
+        borderColor: selected ? 'var(--primary)' : 'var(--border)',
+        pick: () => this.selectCategoryFilter(c.id)
+      };
+    });
+
+    const sourceDefs = [
+      { id: 'own', label: 'My own' },
+      { id: 'dictionary', label: 'Dictionary' },
+      { id: 'proverb', label: 'Proverb' },
+      { id: 'verse', label: 'Scripture' }
+    ];
+    const sourceOptions = sourceDefs.map((o) => {
+      const selected = this.state.sourceType === o.id;
+      return {
+        id: o.id,
+        label: o.label,
+        bg: selected ? 'var(--primary)' : 'var(--bg)',
+        color: selected ? 'var(--bg-dark)' : 'var(--text-muted)',
+        borderColor: selected ? 'var(--primary)' : 'var(--border)',
+        pick: () => this.selectSource(o.id)
+      };
+    });
+
+    let list = this.state.entries;
+    if (this.state.categoryFilter !== 'all') {
+      list = list.filter((e) => e.category === this.state.categoryFilter);
+    }
+    const query = this.state.query.toLowerCase();
+    if (query) {
+      list = list.filter((e) => e.english.toLowerCase().includes(query) || e.giryama.toLowerCase().includes(query));
+    }
+    const filteredEntries = list.map((e) => ({
+      id: e.id,
+      giryama: e.giryama,
+      english: e.english,
+      type: e.type,
+      categoryLabel: categoryLabelOf[e.category] || 'Other'
+    }));
+
+    const totalCount = this.state.entries.length;
+    const shownCount = filteredEntries.length;
+    const filtering = this.state.categoryFilter !== 'all' || this.state.query.length > 0;
+    const summaryLine = filtering
+      ? shownCount + ' of ' + totalCount + (totalCount === 1 ? ' entry shown' : ' entries shown')
+      : totalCount + (totalCount === 1 ? ' entry in your study set' : ' entries in your study set');
+
+    return {
+      themeClass: isLight ? 'light' : '',
+      isLight: isLight,
+      isDark: !isLight,
+      giryamaDraft: this.state.giryamaDraft,
+      englishDraft: this.state.englishDraft,
+      query: this.state.query,
+      sourceOptions: sourceOptions,
+      categoryFormOptions: categoryFormOptions,
+      categoryFilterOptions: categoryFilterOptions,
+      hasSuggestion: !!suggested,
+      suggestedLabel: suggested ? suggested.label : '',
+      filteredEntries: filteredEntries,
+      hasNoResults: filteredEntries.length === 0 && filtering,
+      summaryLine: summaryLine,
+      toggleTheme: this.toggleTheme,
+      handleGiryamaChange: this.handleGiryamaChange,
+      handleEnglishChange: this.handleEnglishChange,
+      handleQueryChange: this.handleQueryChange,
+      saveEntry: this.saveEntry
+    };
+  }
+}
+</script>
+</body>
+</html>

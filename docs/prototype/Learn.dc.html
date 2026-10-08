@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jifunze Kigiriama — Learn</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg-dark: hsl(228 79% 2%); --bg: hsl(222 55% 5%); --bg-light: hsl(220 35% 10%);
+  --text: hsl(220 100% 98%); --text-muted: hsl(220 35% 73%); --highlight: hsl(220 20% 42%);
+  --border: hsl(220 26% 31%); --border-muted: hsl(220 37% 20%);
+  --primary: hsl(220 78% 76%); --secondary: hsl(40 53% 60%);
+  --danger: hsl(9 26% 64%); --warning: hsl(52 19% 57%); --success: hsl(146 17% 59%); --info: hsl(217 28% 65%);
+  --bg-dark: oklch(0.1 0.025 264); --bg: oklch(0.15 0.025 264); --bg-light: oklch(0.2 0.025 264);
+  --text: oklch(0.96 0.05 264); --text-muted: oklch(0.76 0.05 264); --highlight: oklch(0.5 0.05 264);
+  --border: oklch(0.4 0.05 264); --border-muted: oklch(0.3 0.05 264);
+  --primary: oklch(0.76 0.1 264); --secondary: oklch(0.76 0.1 84);
+  --danger: oklch(0.7 0.05 30); --warning: oklch(0.7 0.05 100); --success: oklch(0.7 0.05 160); --info: oklch(0.7 0.05 260);
+}
+.theme-root.light{
+  --bg-dark: hsl(220 59% 91%); --bg: hsl(220 100% 97%); --bg-light: hsl(220 100% 100%);
+  --text: hsl(226 85% 7%); --text-muted: hsl(220 26% 31%); --highlight: hsl(220 100% 100%);
+  --border: hsl(220 19% 53%); --border-muted: hsl(220 27% 65%);
+  --primary: hsl(221 49% 33%); --secondary: hsl(44 100% 14%);
+  --danger: hsl(9 21% 41%); --warning: hsl(52 23% 34%); --success: hsl(147 19% 36%); --info: hsl(217 22% 41%);
+  --bg-dark: oklch(0.92 0.025 264); --bg: oklch(0.96 0.025 264); --bg-light: oklch(1 0.025 264);
+  --text: oklch(0.15 0.05 264); --text-muted: oklch(0.4 0.05 264); --highlight: oklch(1 0.05 264);
+  --border: oklch(0.6 0.05 264); --border-muted: oklch(0.7 0.05 264);
+  --primary: oklch(0.4 0.1 264); --secondary: oklch(0.4 0.1 84);
+  --danger: oklch(0.5 0.05 30); --warning: oklch(0.5 0.05 100); --success: oklch(0.5 0.05 160); --info: oklch(0.5 0.05 260);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Kodchasan',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
+.serif{font-family:'Kodchasan',system-ui,sans-serif;font-weight:600;}
+a{text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+</style>
+</helmet>
+
+<div class="theme-root {{themeClass}}" style="min-height:100vh;background:var(--bg);color:var(--text);display:flex;flex-direction:column;">
+
+  <div style="position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border-muted);">
+    <div class="serif" style="font-size:19px;font-weight:600;">Learn</div>
+    <button onClick="{{toggleTheme}}" aria-label="Toggle color theme" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--bg-light);color:var(--text);display:flex;align-items:center;justify-content:center;">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{true}}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="17" height="17"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>
+      </sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{false}}">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5Z"/></svg>
+      </sc-if>
+    </button>
+  </div>
+
+  <div style="flex:1 1 auto;width:100%;max-width:480px;margin:0 auto;padding:22px 20px 110px;">
+
+    <div style="font-size:14px;color:var(--text-muted);margin-bottom:22px;line-height:1.5;">Your path from first sounds to full passages. Each tier unlocks as your study set and recall grow — review and new material interleave rather than gating hard.</div>
+
+    <sc-for list="{{tiers}}" as="tier" hint-placeholder-count="8">
+      <div style="display:flex;gap:13px;padding:14px 0;border-bottom:1px solid var(--border-muted);align-items:flex-start;">
+        <div style="width:30px;height:30px;border-radius:50%;background:{{tier.badgeBg}};color:{{tier.badgeColor}};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:600;">{{tier.num}}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:600;color:{{tier.titleColor}};">{{tier.name}}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px;line-height:1.45;">{{tier.desc}}</div>
+        </div>
+        <sc-if value="{{tier.locked}}" hint-placeholder-val="{{true}}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="margin-top:6px;flex-shrink:0;"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+        </sc-if>
+        <sc-if value="{{tier.active}}" hint-placeholder-val="{{false}}">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--primary);border:1px solid var(--primary);padding:3px 8px;border-radius:999px;white-space:nowrap;margin-top:4px;">In progress</div>
+        </sc-if>
+      </div>
+    </sc-for>
+
+    <a href="AddEntry.dc.html" style="display:block;text-align:center;background:var(--primary);color:var(--bg-dark);padding:13px;border-radius:12px;font-size:14px;font-weight:600;margin-top:22px;">Add entries to unlock the next tier</a>
+
+  </div>
+
+  <nav style="position:sticky;bottom:0;display:flex;background:var(--bg-light);border-top:1px solid var(--border-muted);padding:8px 4px;">
+    <a href="Main.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="21" height="21"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9.5a1 1 0 0 0 1-1v-4h3v4a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-9"/></svg>
+      Home
+    </a>
+    <a href="AddEntry.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      Add
+    </a>
+    <a href="Learn.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--primary);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="21" height="21"><path d="M12 6.5c-1.6-1.2-3.8-1.7-6-1.5v12c2.2-.2 4.4.3 6 1.5 1.6-1.2 3.8-1.7 6-1.5v-12c-2.2-.2-4.4.3-6 1.5Z"/><path d="M12 6.5v12"/></svg>
+      Learn
+    </a>
+    <a href="Culture.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><circle cx="12" cy="12" r="2.3"/><path d="M8.2 8.2a5.3 5.3 0 0 0 0 7.6M15.8 8.2a5.3 5.3 0 0 1 0 7.6M5.3 5.3a9.6 9.6 0 0 0 0 13.4M18.7 5.3a9.6 9.6 0 0 1 0 13.4"/></svg>
+      Culture
+    </a>
+    <a href="Settings.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><path d="M4 7h10M17 7h3M4 17h3M10 17h10"/><circle cx="14" cy="7" r="2.1"/><circle cx="7" cy="17" r="2.1"/></svg>
+      Settings
+    </a>
+  </nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { theme: 'dark' };
+  }
+
+  toggleTheme = () => this.setState({ theme: this.state.theme === 'light' ? 'dark' : 'light' });
+
+  renderVals() {
+    const isLight = this.state.theme === 'light';
+    const defs = [
+      { name: 'Sounds & orthography', desc: 'Pronunciation, vowel length and tone, spelling conventions.', status: 'active' },
+      { name: 'Core vocabulary', desc: 'High-frequency nouns and verbs, recognition practice.', status: 'locked' },
+      { name: 'Noun classes', desc: 'How Giriama nouns group and agree with their modifiers.', status: 'locked' },
+      { name: 'Verb morphology', desc: 'Subject prefixes and tense patterns on common verbs.', status: 'locked' },
+      { name: 'Proverbs', desc: 'Short, self-contained phrases — a natural bridge to full sentences.', status: 'locked' },
+      { name: 'Single verses', desc: 'Full sentences, paired with listening practice.', status: 'locked' },
+      { name: 'Short passages', desc: 'Multi-sentence comprehension and cloze exercises.', status: 'locked' },
+      { name: 'Guided reading', desc: 'Longer passages with a rolling glossary.', status: 'locked' }
+    ];
+    const tiers = defs.map((t, i) => ({
+      num: i + 1,
+      name: t.name,
+      desc: t.desc,
+      locked: t.status === 'locked',
+      active: t.status === 'active',
+      badgeBg: t.status === 'active' ? 'var(--primary)' : 'var(--bg-light)',
+      badgeColor: t.status === 'active' ? 'var(--bg-dark)' : 'var(--text-muted)',
+      titleColor: t.status === 'active' ? 'var(--text)' : 'var(--text-muted)'
+    }));
+    return {
+      themeClass: isLight ? 'light' : '',
+      isLight: isLight,
+      isDark: !isLight,
+      toggleTheme: this.toggleTheme,
+      tiers: tiers
+    };
+  }
+}
+</script>
+</body>
+</html>

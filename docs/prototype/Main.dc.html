@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jifunze Kigiriama — Home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg-dark: hsl(228 79% 2%); --bg: hsl(222 55% 5%); --bg-light: hsl(220 35% 10%);
+  --text: hsl(220 100% 98%); --text-muted: hsl(220 35% 73%); --highlight: hsl(220 20% 42%);
+  --border: hsl(220 26% 31%); --border-muted: hsl(220 37% 20%);
+  --primary: hsl(220 78% 76%); --secondary: hsl(40 53% 60%);
+  --danger: hsl(9 26% 64%); --warning: hsl(52 19% 57%); --success: hsl(146 17% 59%); --info: hsl(217 28% 65%);
+  --bg-dark: oklch(0.1 0.025 264); --bg: oklch(0.15 0.025 264); --bg-light: oklch(0.2 0.025 264);
+  --text: oklch(0.96 0.05 264); --text-muted: oklch(0.76 0.05 264); --highlight: oklch(0.5 0.05 264);
+  --border: oklch(0.4 0.05 264); --border-muted: oklch(0.3 0.05 264);
+  --primary: oklch(0.76 0.1 264); --secondary: oklch(0.76 0.1 84);
+  --danger: oklch(0.7 0.05 30); --warning: oklch(0.7 0.05 100); --success: oklch(0.7 0.05 160); --info: oklch(0.7 0.05 260);
+}
+.theme-root.light{
+  --bg-dark: hsl(220 59% 91%); --bg: hsl(220 100% 97%); --bg-light: hsl(220 100% 100%);
+  --text: hsl(226 85% 7%); --text-muted: hsl(220 26% 31%); --highlight: hsl(220 100% 100%);
+  --border: hsl(220 19% 53%); --border-muted: hsl(220 27% 65%);
+  --primary: hsl(221 49% 33%); --secondary: hsl(44 100% 14%);
+  --danger: hsl(9 21% 41%); --warning: hsl(52 23% 34%); --success: hsl(147 19% 36%); --info: hsl(217 22% 41%);
+  --bg-dark: oklch(0.92 0.025 264); --bg: oklch(0.96 0.025 264); --bg-light: oklch(1 0.025 264);
+  --text: oklch(0.15 0.05 264); --text-muted: oklch(0.4 0.05 264); --highlight: oklch(1 0.05 264);
+  --border: oklch(0.6 0.05 264); --border-muted: oklch(0.7 0.05 264);
+  --primary: oklch(0.4 0.1 264); --secondary: oklch(0.4 0.1 84);
+  --danger: oklch(0.5 0.05 30); --warning: oklch(0.5 0.05 100); --success: oklch(0.5 0.05 160); --info: oklch(0.5 0.05 260);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Kodchasan',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
+.serif{font-family:'Kodchasan',system-ui,sans-serif;font-weight:600;}
+a{text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+</style>
+</helmet>
+
+<div class="theme-root {{themeClass}}" style="min-height:100vh;background:var(--bg);color:var(--text);display:flex;flex-direction:column;">
+
+  <div style="position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border-muted);">
+    <div class="serif" style="font-size:18px;font-weight:600;letter-spacing:.01em;">Jifunze Kigiriama</div>
+    <button onClick="{{toggleTheme}}" aria-label="Toggle color theme" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--bg-light);color:var(--text);display:flex;align-items:center;justify-content:center;">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{true}}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="17" height="17"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>
+      </sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{false}}">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5Z"/></svg>
+      </sc-if>
+    </button>
+  </div>
+
+  <div style="flex:1 1 auto;width:100%;max-width:480px;margin:0 auto;padding:22px 20px 110px;">
+
+    <div style="font-size:14px;color:var(--text-muted);margin-bottom:18px;">Welcome back. Let's build your Kigiriama, one entry at a time.</div>
+
+    <div style="display:flex;gap:12px;margin-bottom:20px;">
+      <div style="flex:1;background:var(--bg-light);border:1px solid var(--border-muted);border-radius:14px;padding:16px;text-align:center;">
+        <svg viewBox="0 0 24 24" fill="var(--secondary)" width="20" height="20" style="margin:0 auto;"><path d="M12 2c1 3-2 4-2 7a4 4 0 0 0 8 0c0-1-.3-2-1-3 1.5.8 3 2.7 3 5.5A6.5 6.5 0 0 1 6.5 18 6.5 6.5 0 0 1 8 7c0 1.5.8 2 .8 2C8 6 9.5 3.5 12 2Z"/></svg>
+        <div class="serif" style="font-size:22px;font-weight:600;margin-top:6px;">Day 1</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Current streak</div>
+      </div>
+      <div style="flex:1;background:var(--bg-light);border:1px solid var(--border-muted);border-radius:14px;padding:16px;text-align:center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="margin:0 auto;"><rect x="5" y="4" width="11" height="15" rx="1.5"/><path d="M8.5 8.5h4M8.5 11.5h4M8.5 14.5h2.5"/></svg>
+        <div class="serif" style="font-size:22px;font-weight:600;margin-top:6px;">0</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Entries added</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-light);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:26px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="19" height="19"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        <div class="serif" style="font-size:17px;font-weight:600;">Today's 20-minute session</div>
+      </div>
+      <div style="font-size:14px;color:var(--text-muted);line-height:1.55;margin-bottom:16px;">Add at least 5 entries to unlock your first guided session — every review is built from words and phrases you add yourself.</div>
+      <a href="AddEntry.dc.html" style="display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:var(--bg-dark);padding:11px 16px;border-radius:10px;font-size:14px;font-weight:600;">
+        Add your first entries
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="serif" style="font-size:16px;font-weight:600;margin-bottom:10px;">Suggested topics to start with</div>
+    <sc-for list="{{topics}}" as="topic" hint-placeholder-count="5">
+      <a href="AddEntry.dc.html" style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--bg-light);border:1px solid var(--border-muted);border-radius:12px;padding:14px 16px;margin-bottom:8px;">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);">{{topic.name}}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">{{topic.desc}}</div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" style="flex-shrink:0;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </sc-for>
+
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:22px;">
+      <a href="Culture.dc.html" style="font-size:13px;color:var(--primary);">Explore Giriama culture & media →</a>
+      <a href="Settings.dc.html" style="font-size:13px;color:var(--primary);">Set up a daily study reminder →</a>
+    </div>
+
+  </div>
+
+  <nav style="position:sticky;bottom:0;display:flex;background:var(--bg-light);border-top:1px solid var(--border-muted);padding:8px 4px;">
+    <a href="Main.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--primary);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="21" height="21"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9.5a1 1 0 0 0 1-1v-4h3v4a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-9"/></svg>
+      Home
+    </a>
+    <a href="AddEntry.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      Add
+    </a>
+    <a href="Learn.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="21" height="21"><path d="M12 6.5c-1.6-1.2-3.8-1.7-6-1.5v12c2.2-.2 4.4.3 6 1.5 1.6-1.2 3.8-1.7 6-1.5v-12c-2.2-.2-4.4.3-6 1.5Z"/><path d="M12 6.5v12"/></svg>
+      Learn
+    </a>
+    <a href="Culture.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><circle cx="12" cy="12" r="2.3"/><path d="M8.2 8.2a5.3 5.3 0 0 0 0 7.6M15.8 8.2a5.3 5.3 0 0 1 0 7.6M5.3 5.3a9.6 9.6 0 0 0 0 13.4M18.7 5.3a9.6 9.6 0 0 1 0 13.4"/></svg>
+      Culture
+    </a>
+    <a href="Settings.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><path d="M4 7h10M17 7h3M4 17h3M10 17h10"/><circle cx="14" cy="7" r="2.1"/><circle cx="7" cy="17" r="2.1"/></svg>
+      Settings
+    </a>
+  </nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { theme: 'dark' };
+  }
+
+  toggleTheme = () => this.setState({ theme: this.state.theme === 'light' ? 'dark' : 'light' });
+
+  renderVals() {
+    const isLight = this.state.theme === 'light';
+    return {
+      themeClass: isLight ? 'light' : '',
+      isLight: isLight,
+      isDark: !isLight,
+      toggleTheme: this.toggleTheme,
+      topics: [
+        { name: 'Greetings & introductions', desc: 'The first words for any conversation' },
+        { name: 'Family & relationships', desc: 'Kinship terms and family words' },
+        { name: 'Numbers & counting', desc: 'Start with 1–10, build from there' },
+        { name: 'Proverbs & wisdom', desc: 'Short sayings — great for memorization' },
+        { name: 'Food & daily life', desc: 'Everyday vocabulary for routines' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

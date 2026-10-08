@@ -1,0 +1,21 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-10-03T19:42:00Z"},
+  "title": "Jifunze Kigiriama",
+  "launch": {"view": "focused", "file": "Login.dc.html"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 390, "h": 844, "expand": "fill", "is_interactive": true, "title": "Home"},
+    "AddEntry.dc.html": {"x": 470, "y": 0, "w": 390, "h": 844, "expand": "fill", "is_interactive": true, "title": "Add Entry"},
+    "Learn.dc.html": {"x": 940, "y": 0, "w": 390, "h": 844, "expand": "fill", "is_interactive": true, "title": "Learn"},
+    "Culture.dc.html": {"x": 1410, "y": 0, "w": 390, "h": 844, "expand": "fill", "is_interactive": true, "title": "Culture & Media"},
+    "Settings.dc.html": {"x": 1880, "y": 0, "w": 390, "h": 844, "expand": "fill", "is_interactive": true, "title": "Settings"},
+    "Login.dc.html": {"x": 2350, "y": 0, "w": 390, "h": 844, "expand": "fill", "is_interactive": true, "title": "Log In"},
+    "Review.dc.html": {"x": 2820, "y": 0, "w": 390, "h": 844, "expand": "fill", "is_interactive": true, "title": "Admin — Review Queue"}
+  },
+  "order": ["Main.dc.html", "AddEntry.dc.html", "Learn.dc.html", "Culture.dc.html", "Settings.dc.html", "Login.dc.html", "Review.dc.html"],
+  "notes": {
+    "n1": {"x": 0, "y": -280, "text": "Jifunze Kigiriama — prototype flow (mobile-first PWA)", "kind": "title1", "maxW": 3210}
+  },
+  "designSystems": []
+}

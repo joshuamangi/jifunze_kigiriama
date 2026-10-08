@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jifunze Kigiriama — Admin Review</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg-dark: hsl(228 79% 2%); --bg: hsl(222 55% 5%); --bg-light: hsl(220 35% 10%);
+  --text: hsl(220 100% 98%); --text-muted: hsl(220 35% 73%); --highlight: hsl(220 20% 42%);
+  --border: hsl(220 26% 31%); --border-muted: hsl(220 37% 20%);
+  --primary: hsl(220 78% 76%); --secondary: hsl(40 53% 60%);
+  --danger: hsl(9 26% 64%); --warning: hsl(52 19% 57%); --success: hsl(146 17% 59%); --info: hsl(217 28% 65%);
+  --bg-dark: oklch(0.1 0.025 264); --bg: oklch(0.15 0.025 264); --bg-light: oklch(0.2 0.025 264);
+  --text: oklch(0.96 0.05 264); --text-muted: oklch(0.76 0.05 264); --highlight: oklch(0.5 0.05 264);
+  --border: oklch(0.4 0.05 264); --border-muted: oklch(0.3 0.05 264);
+  --primary: oklch(0.76 0.1 264); --secondary: oklch(0.76 0.1 84);
+  --danger: oklch(0.7 0.05 30); --warning: oklch(0.7 0.05 100); --success: oklch(0.7 0.05 160); --info: oklch(0.7 0.05 260);
+}
+.theme-root.light{
+  --bg-dark: hsl(220 59% 91%); --bg: hsl(220 100% 97%); --bg-light: hsl(220 100% 100%);
+  --text: hsl(226 85% 7%); --text-muted: hsl(220 26% 31%); --highlight: hsl(220 100% 100%);
+  --border: hsl(220 19% 53%); --border-muted: hsl(220 27% 65%);
+  --primary: hsl(221 49% 33%); --secondary: hsl(44 100% 14%);
+  --danger: hsl(9 21% 41%); --warning: hsl(52 23% 34%); --success: hsl(147 19% 36%); --info: hsl(217 22% 41%);
+  --bg-dark: oklch(0.92 0.025 264); --bg: oklch(0.96 0.025 264); --bg-light: oklch(1 0.025 264);
+  --text: oklch(0.15 0.05 264); --text-muted: oklch(0.4 0.05 264); --highlight: oklch(1 0.05 264);
+  --border: oklch(0.6 0.05 264); --border-muted: oklch(0.7 0.05 264);
+  --primary: oklch(0.4 0.1 264); --secondary: oklch(0.4 0.1 84);
+  --danger: oklch(0.5 0.05 30); --warning: oklch(0.5 0.05 100); --success: oklch(0.5 0.05 160); --info: oklch(0.5 0.05 260);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Kodchasan',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
+.serif{font-family:'Kodchasan',system-ui,sans-serif;font-weight:600;}
+a{text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+</style>
+</helmet>
+
+<div class="theme-root {{themeClass}}" style="min-height:100vh;background:var(--bg);color:var(--text);display:flex;flex-direction:column;">
+
+  <div style="position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border-muted);">
+    <a href="Settings.dc.html" aria-label="Back to Settings" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--bg-light);color:var(--text);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M15 5 8 12l7 7"/></svg>
+    </a>
+    <div>
+      <div class="serif" style="font-size:17px;font-weight:600;">Review queue</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:1px;">Admin only</div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;width:100%;max-width:480px;margin:0 auto;padding:20px 20px 40px;">
+
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:18px;">{{summaryLine}}</div>
+
+    <div style="display:flex;gap:10px;margin-bottom:22px;">
+      <div style="flex:1;background:var(--bg-light);border:1px solid var(--border-muted);border-radius:12px;padding:12px;text-align:center;">
+        <div class="serif" style="font-size:20px;font-weight:600;color:var(--success);">{{approvedCount}}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Approved</div>
+      </div>
+      <div style="flex:1;background:var(--bg-light);border:1px solid var(--border-muted);border-radius:12px;padding:12px;text-align:center;">
+        <div class="serif" style="font-size:20px;font-weight:600;color:var(--danger);">{{declinedCount}}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Declined</div>
+      </div>
+      <div style="flex:1;background:var(--bg-light);border:1px solid var(--border-muted);border-radius:12px;padding:12px;text-align:center;">
+        <div class="serif" style="font-size:20px;font-weight:600;color:var(--primary);">{{pendingCount}}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Waiting</div>
+      </div>
+    </div>
+
+    <sc-for list="{{pending}}" as="item" hint-placeholder-count="2">
+      <div style="background:var(--bg-light);border:1px solid var(--border-muted);border-radius:16px;padding:16px;margin-bottom:12px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
+          <div>
+            <div class="serif" style="font-size:17px;font-weight:600;">{{item.giriama}}</div>
+            <div style="font-size:14px;color:var(--text-muted);margin-top:2px;">{{item.english}}</div>
+          </div>
+          <div style="font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:999px;background:var(--bg);border:1px solid var(--border);color:var(--primary);white-space:nowrap;">{{item.categoryLabel}}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="font-size:11.5px;color:var(--text-muted);">{{item.sourceLabel}}</span>
+          <span style="font-size:11.5px;color:var(--text-muted);">·</span>
+          <span style="font-size:11.5px;color:var(--text-muted);">{{item.submittedAgo}}</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onClick="{{item.decline}}" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            Decline
+          </button>
+          <button onClick="{{item.approve}}" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--success);background:var(--success);color:var(--bg-dark);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M4 12l5 5 11-11"/></svg>
+            Approve
+          </button>
+        </div>
+      </div>
+    </sc-for>
+
+    <sc-if value="{{hasNoPending}}" hint-placeholder-val="{{false}}">
+      <div style="text-align:center;padding:50px 20px;color:var(--text-muted);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="34" height="34" style="margin-bottom:12px;opacity:.6;"><path d="M4 12l5 5 11-11"/></svg>
+        <div style="font-size:14px;">Queue is clear — nothing waiting on review.</div>
+      </div>
+    </sc-if>
+
+    <div style="font-size:11px;color:var(--text-muted);line-height:1.5;text-align:center;margin-top:24px;font-style:italic;">In the real app this screen would be gated to admin accounts only, and approving an entry would move it from a staging table into the shared dictionary.</div>
+
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      theme: 'dark',
+      approvedCount: 0,
+      declinedCount: 0,
+      pending: [
+        { id: 1, giriama: 'hahu', english: 'three', category: 'numbers', source: 'dictionary', ago: '2 days ago' },
+        { id: 2, giriama: 'inne', english: 'four', category: 'numbers', source: 'dictionary', ago: '1 day ago' }
+      ]
+    };
+  }
+
+  toggleTheme = () => this.setState({ theme: this.state.theme === 'light' ? 'dark' : 'light' });
+
+  approveItem = (id) => {
+    const pending = this.state.pending.filter((p) => p.id !== id);
+    this.setState({ pending: pending, approvedCount: this.state.approvedCount + 1 });
+  };
+
+  declineItem = (id) => {
+    const pending = this.state.pending.filter((p) => p.id !== id);
+    this.setState({ pending: pending, declinedCount: this.state.declinedCount + 1 });
+  };
+
+  renderVals() {
+    const isLight = this.state.theme === 'light';
+    const categoryLabels = {
+      greetings: 'Greetings',
+      family: 'Family',
+      numbers: 'Numbers',
+      proverbs: 'Proverbs',
+      food: 'Food'
+    };
+    const sourceLabels = {
+      own: 'Own addition',
+      dictionary: 'From dictionary',
+      proverb: 'From proverb collection',
+      scripture: 'From scripture'
+    };
+    const pending = this.state.pending.map((p) => ({
+      id: p.id,
+      giriama: p.giriama,
+      english: p.english,
+      categoryLabel: categoryLabels[p.category] || p.category,
+      sourceLabel: sourceLabels[p.source] || p.source,
+      submittedAgo: p.ago,
+      approve: () => this.approveItem(p.id),
+      decline: () => this.declineItem(p.id)
+    }));
+
+    const pendingCount = pending.length;
+    const summaryLine = pendingCount === 0
+      ? 'All caught up.'
+      : pendingCount === 1
+        ? '1 entry waiting for review.'
+        : pendingCount + ' entries waiting for review.';
+
+    return {
+      themeClass: isLight ? 'light' : '',
+      isLight: isLight,
+      isDark: !isLight,
+      toggleTheme: this.toggleTheme,
+      pending: pending,
+      pendingCount: pendingCount,
+      approvedCount: this.state.approvedCount,
+      declinedCount: this.state.declinedCount,
+      summaryLine: summaryLine,
+      hasNoPending: pendingCount === 0
+    };
+  }
+}
+</script>
+</body>
+</html>

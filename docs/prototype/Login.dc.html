@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jifunze Kigiriama — Log In</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg-dark: hsl(228 79% 2%); --bg: hsl(222 55% 5%); --bg-light: hsl(220 35% 10%);
+  --text: hsl(220 100% 98%); --text-muted: hsl(220 35% 73%); --highlight: hsl(220 20% 42%);
+  --border: hsl(220 26% 31%); --border-muted: hsl(220 37% 20%);
+  --primary: hsl(220 78% 76%); --secondary: hsl(40 53% 60%);
+  --danger: hsl(9 26% 64%); --warning: hsl(52 19% 57%); --success: hsl(146 17% 59%); --info: hsl(217 28% 65%);
+  --bg-dark: oklch(0.1 0.025 264); --bg: oklch(0.15 0.025 264); --bg-light: oklch(0.2 0.025 264);
+  --text: oklch(0.96 0.05 264); --text-muted: oklch(0.76 0.05 264); --highlight: oklch(0.5 0.05 264);
+  --border: oklch(0.4 0.05 264); --border-muted: oklch(0.3 0.05 264);
+  --primary: oklch(0.76 0.1 264); --secondary: oklch(0.76 0.1 84);
+  --danger: oklch(0.7 0.05 30); --warning: oklch(0.7 0.05 100); --success: oklch(0.7 0.05 160); --info: oklch(0.7 0.05 260);
+}
+.theme-root.light{
+  --bg-dark: hsl(220 59% 91%); --bg: hsl(220 100% 97%); --bg-light: hsl(220 100% 100%);
+  --text: hsl(226 85% 7%); --text-muted: hsl(220 26% 31%); --highlight: hsl(220 100% 100%);
+  --border: hsl(220 19% 53%); --border-muted: hsl(220 27% 65%);
+  --primary: hsl(221 49% 33%); --secondary: hsl(44 100% 14%);
+  --danger: hsl(9 21% 41%); --warning: hsl(52 23% 34%); --success: hsl(147 19% 36%); --info: hsl(217 22% 41%);
+  --bg-dark: oklch(0.92 0.025 264); --bg: oklch(0.96 0.025 264); --bg-light: oklch(1 0.025 264);
+  --text: oklch(0.15 0.05 264); --text-muted: oklch(0.4 0.05 264); --highlight: oklch(1 0.05 264);
+  --border: oklch(0.6 0.05 264); --border-muted: oklch(0.7 0.05 264);
+  --primary: oklch(0.4 0.1 264); --secondary: oklch(0.4 0.1 84);
+  --danger: oklch(0.5 0.05 30); --warning: oklch(0.5 0.05 100); --success: oklch(0.5 0.05 160); --info: oklch(0.5 0.05 260);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Kodchasan',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
+.serif{font-family:'Kodchasan',system-ui,sans-serif;font-weight:600;}
+a{text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+input{font-family:inherit;}
+input::placeholder{color:var(--text-muted);opacity:.7;}
+</style>
+</helmet>
+
+<div class="theme-root {{themeClass}}" style="min-height:100vh;background:var(--bg);color:var(--text);display:flex;flex-direction:column;">
+
+  <div style="position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;">
+    <div class="serif" style="font-size:18px;font-weight:600;">Jifunze Kigiriama</div>
+    <button onClick="{{toggleTheme}}" aria-label="Toggle color theme" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--bg-light);color:var(--text);display:flex;align-items:center;justify-content:center;">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{true}}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="17" height="17"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>
+      </sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{false}}">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5Z"/></svg>
+      </sc-if>
+    </button>
+  </div>
+
+  <div style="flex:1 1 auto;width:100%;max-width:480px;margin:0 auto;padding:40px 24px;display:flex;flex-direction:column;justify-content:center;">
+
+    <div style="width:52px;height:52px;border-radius:16px;background:var(--bg-light);border:1px solid var(--border-muted);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+    </div>
+
+    <div class="serif" style="font-size:24px;font-weight:600;margin-bottom:6px;">Welcome back</div>
+    <div style="font-size:14px;color:var(--text-muted);margin-bottom:28px;line-height:1.5;">Sign in to continue your Kigiriama study set.</div>
+
+    <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Username</label>
+    <input type="text" value="{{username}}" onChange="{{handleUsernameChange}}" placeholder="e.g. joshua" style="width:100%;padding:12px 13px;border-radius:10px;border:1px solid var(--border);background:var(--bg-light);color:var(--text);font-size:15px;margin-bottom:14px;"/>
+
+    <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Password</label>
+    <input type="password" value="{{password}}" onChange="{{handlePasswordChange}}" placeholder="••••••••" style="width:100%;padding:12px 13px;border-radius:10px;border:1px solid var(--border);background:var(--bg-light);color:var(--text);font-size:15px;margin-bottom:22px;"/>
+
+    <a href="Main.dc.html" style="display:block;text-align:center;background:var(--primary);color:var(--bg-dark);padding:13px;border-radius:12px;font-size:15px;font-weight:600;margin-bottom:14px;">Log in</a>
+
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5;text-align:center;">Accounts are created by whoever runs this app — there's no self sign-up. New to the group? Ask for an invite.</div>
+    <div style="font-size:11px;color:var(--text-muted);line-height:1.5;text-align:center;margin-top:16px;font-style:italic;">This screen shows the flow — real password checking happens once the backend is built.</div>
+
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { theme: 'dark', username: '', password: '' };
+  }
+
+  toggleTheme = () => this.setState({ theme: this.state.theme === 'light' ? 'dark' : 'light' });
+  handleUsernameChange = (e) => this.setState({ username: e.target.value });
+  handlePasswordChange = (e) => this.setState({ password: e.target.value });
+
+  renderVals() {
+    const isLight = this.state.theme === 'light';
+    return {
+      themeClass: isLight ? 'light' : '',
+      isLight: isLight,
+      isDark: !isLight,
+      toggleTheme: this.toggleTheme,
+      username: this.state.username,
+      password: this.state.password,
+      handleUsernameChange: this.handleUsernameChange,
+      handlePasswordChange: this.handlePasswordChange
+    };
+  }
+}
+</script>
+</body>
+</html>

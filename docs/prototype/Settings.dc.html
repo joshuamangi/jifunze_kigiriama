@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jifunze Kigiriama — Settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg-dark: hsl(228 79% 2%); --bg: hsl(222 55% 5%); --bg-light: hsl(220 35% 10%);
+  --text: hsl(220 100% 98%); --text-muted: hsl(220 35% 73%); --highlight: hsl(220 20% 42%);
+  --border: hsl(220 26% 31%); --border-muted: hsl(220 37% 20%);
+  --primary: hsl(220 78% 76%); --secondary: hsl(40 53% 60%);
+  --danger: hsl(9 26% 64%); --warning: hsl(52 19% 57%); --success: hsl(146 17% 59%); --info: hsl(217 28% 65%);
+  --bg-dark: oklch(0.1 0.025 264); --bg: oklch(0.15 0.025 264); --bg-light: oklch(0.2 0.025 264);
+  --text: oklch(0.96 0.05 264); --text-muted: oklch(0.76 0.05 264); --highlight: oklch(0.5 0.05 264);
+  --border: oklch(0.4 0.05 264); --border-muted: oklch(0.3 0.05 264);
+  --primary: oklch(0.76 0.1 264); --secondary: oklch(0.76 0.1 84);
+  --danger: oklch(0.7 0.05 30); --warning: oklch(0.7 0.05 100); --success: oklch(0.7 0.05 160); --info: oklch(0.7 0.05 260);
+}
+.theme-root.light{
+  --bg-dark: hsl(220 59% 91%); --bg: hsl(220 100% 97%); --bg-light: hsl(220 100% 100%);
+  --text: hsl(226 85% 7%); --text-muted: hsl(220 26% 31%); --highlight: hsl(220 100% 100%);
+  --border: hsl(220 19% 53%); --border-muted: hsl(220 27% 65%);
+  --primary: hsl(221 49% 33%); --secondary: hsl(44 100% 14%);
+  --danger: hsl(9 21% 41%); --warning: hsl(52 23% 34%); --success: hsl(147 19% 36%); --info: hsl(217 22% 41%);
+  --bg-dark: oklch(0.92 0.025 264); --bg: oklch(0.96 0.025 264); --bg-light: oklch(1 0.025 264);
+  --text: oklch(0.15 0.05 264); --text-muted: oklch(0.4 0.05 264); --highlight: oklch(1 0.05 264);
+  --border: oklch(0.6 0.05 264); --border-muted: oklch(0.7 0.05 264);
+  --primary: oklch(0.4 0.1 264); --secondary: oklch(0.4 0.1 84);
+  --danger: oklch(0.5 0.05 30); --warning: oklch(0.5 0.05 100); --success: oklch(0.5 0.05 160); --info: oklch(0.5 0.05 260);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Kodchasan',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
+.serif{font-family:'Kodchasan',system-ui,sans-serif;font-weight:600;}
+a{text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+input{font-family:inherit;}
+</style>
+</helmet>
+
+<div class="theme-root {{themeClass}}" style="min-height:100vh;background:var(--bg);color:var(--text);display:flex;flex-direction:column;">
+
+  <div style="position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border-muted);">
+    <div class="serif" style="font-size:19px;font-weight:600;">Settings</div>
+    <button onClick="{{toggleTheme}}" aria-label="Toggle color theme" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--bg-light);color:var(--text);display:flex;align-items:center;justify-content:center;">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{true}}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="17" height="17"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>
+      </sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{false}}">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5Z"/></svg>
+      </sc-if>
+    </button>
+  </div>
+
+  <div style="flex:1 1 auto;width:100%;max-width:480px;margin:0 auto;padding:22px 20px 110px;">
+
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600;margin-bottom:12px;">Study reminders</div>
+    <div style="background:var(--bg-light);border:1px solid var(--border-muted);border-radius:16px;padding:18px;margin-bottom:24px;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:{{reminderBodyMargin}};">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="19" height="19"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4.5 7l7.5 6 7.5-6"/></svg>
+          <div>
+            <div style="font-size:14px;font-weight:600;">Daily email reminder</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:1px;">A short nudge to do today's session</div>
+          </div>
+        </div>
+        <button onClick="{{toggleReminder}}" aria-label="Toggle study reminders" style="width:46px;height:26px;border-radius:999px;border:none;background:{{reminderTrackColor}};position:relative;padding:0;flex-shrink:0;">
+          <span style="position:absolute;top:3px;left:{{reminderThumbLeft}};width:20px;height:20px;border-radius:50%;background:var(--bg-light);transition:left .15s ease;display:block;"></span>
+        </button>
+      </div>
+
+      <sc-if value="{{reminderOn}}" hint-placeholder-val="{{true}}">
+        <div style="border-top:1px solid var(--border-muted);margin-top:16px;padding-top:16px;">
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Time</label>
+          <input type="time" value="{{reminderTime}}" onChange="{{handleTimeChange}}" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;margin-bottom:14px;"/>
+
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Frequency</label>
+          <div style="display:flex;gap:8px;margin-bottom:14px;">
+            <sc-for list="{{freqOptions}}" as="opt" hint-placeholder-count="2">
+              <button onClick="{{opt.pick}}" style="flex:1;padding:9px;border-radius:10px;font-size:13px;font-weight:500;border:1px solid {{opt.borderColor}};background:{{opt.bg}};color:{{opt.color}};">{{opt.label}}</button>
+            </sc-for>
+          </div>
+
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">Send to</label>
+          <input type="email" value="{{reminderEmail}}" onChange="{{handleEmailChange}}" placeholder="you@example.com" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;"/>
+        </div>
+      </sc-if>
+
+      <div style="font-size:12px;color:var(--text-muted);margin-top:16px;line-height:1.5;font-style:italic;">Reminders are sent by a small scheduled job on your Raspberry Pi — this screen just captures the preference. Wiring up the actual email send is part of the next build phase.</div>
+    </div>
+
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600;margin-bottom:12px;">Appearance</div>
+    <div style="background:var(--bg-light);border:1px solid var(--border-muted);border-radius:16px;padding:18px;margin-bottom:24px;">
+      <div style="display:flex;gap:8px;">
+        <button onClick="{{setDark}}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:10px;border:1px solid {{darkBorder}};background:{{darkBg}};color:{{darkColor}};font-size:13px;font-weight:600;">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 1 0 10.5 10.5Z"/></svg>
+          Dark
+        </button>
+        <button onClick="{{setLight}}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:10px;border:1px solid {{lightBorder}};background:{{lightBg}};color:{{lightColor}};font-size:13px;font-weight:600;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="14" height="14"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>
+          Light
+        </button>
+      </div>
+    </div>
+
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600;margin-bottom:12px;">Admin</div>
+    <a href="Review.dc.html" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg-light);border:1px solid var(--border-muted);border-radius:16px;padding:16px 18px;margin-bottom:24px;color:var(--text);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="19" height="19"><path d="M4 12l5 5 11-11"/></svg>
+        <div>
+          <div style="font-size:14px;font-weight:600;">Review queue</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:1px;">2 entries waiting for review</div>
+        </div>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+    <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin:-14px 0 24px;font-style:italic;">In the real app this card would only show for admin accounts.</div>
+
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600;margin-bottom:12px;">About</div>
+    <div style="background:var(--bg-light);border:1px solid var(--border-muted);border-radius:16px;padding:18px;">
+      <div class="serif" style="font-size:16px;font-weight:600;">Jifunze Kigiriama</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-top:4px;line-height:1.5;">A self-hosted companion for learning Kigiriama, one entry at a time. Runs on your own Raspberry Pi.</div>
+    </div>
+
+  </div>
+
+  <nav style="position:sticky;bottom:0;display:flex;background:var(--bg-light);border-top:1px solid var(--border-muted);padding:8px 4px;">
+    <a href="Main.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="21" height="21"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9.5a1 1 0 0 0 1-1v-4h3v4a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-9"/></svg>
+      Home
+    </a>
+    <a href="AddEntry.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      Add
+    </a>
+    <a href="Learn.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="21" height="21"><path d="M12 6.5c-1.6-1.2-3.8-1.7-6-1.5v12c2.2-.2 4.4.3 6 1.5 1.6-1.2 3.8-1.7 6-1.5v-12c-2.2-.2-4.4.3-6 1.5Z"/><path d="M12 6.5v12"/></svg>
+      Learn
+    </a>
+    <a href="Culture.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><circle cx="12" cy="12" r="2.3"/><path d="M8.2 8.2a5.3 5.3 0 0 0 0 7.6M15.8 8.2a5.3 5.3 0 0 1 0 7.6M5.3 5.3a9.6 9.6 0 0 0 0 13.4M18.7 5.3a9.6 9.6 0 0 1 0 13.4"/></svg>
+      Culture
+    </a>
+    <a href="Settings.dc.html" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10.5px;color:var(--primary);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="21" height="21"><path d="M4 7h10M17 7h3M4 17h3M10 17h10"/><circle cx="14" cy="7" r="2.1"/><circle cx="7" cy="17" r="2.1"/></svg>
+      Settings
+    </a>
+  </nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      theme: 'dark',
+      reminderOn: true,
+      reminderTime: '07:00',
+      reminderFreq: 'daily',
+      reminderEmail: ''
+    };
+  }
+
+  toggleTheme = () => this.setState({ theme: this.state.theme === 'light' ? 'dark' : 'light' });
+  setDark = () => this.setState({ theme: 'dark' });
+  setLight = () => this.setState({ theme: 'light' });
+  toggleReminder = () => this.setState({ reminderOn: !this.state.reminderOn });
+  handleTimeChange = (e) => this.setState({ reminderTime: e.target.value });
+  handleEmailChange = (e) => this.setState({ reminderEmail: e.target.value });
+  setFreq = (freq) => this.setState({ reminderFreq: freq });
+
+  renderVals() {
+    const isLight = this.state.theme === 'light';
+    const freqDefs = [
+      { id: 'daily', label: 'Every day' },
+      { id: 'weekdays', label: 'Weekdays only' }
+    ];
+    const freqOptions = freqDefs.map((f) => {
+      const selected = this.state.reminderFreq === f.id;
+      return {
+        id: f.id,
+        label: f.label,
+        bg: selected ? 'var(--primary)' : 'var(--bg)',
+        color: selected ? 'var(--bg-dark)' : 'var(--text-muted)',
+        borderColor: selected ? 'var(--primary)' : 'var(--border)',
+        pick: () => this.setFreq(f.id)
+      };
+    });
+
+    return {
+      themeClass: isLight ? 'light' : '',
+      isLight: isLight,
+      isDark: !isLight,
+      toggleTheme: this.toggleTheme,
+      setDark: this.setDark,
+      setLight: this.setLight,
+      darkBg: !isLight ? 'var(--primary)' : 'var(--bg)',
+      darkColor: !isLight ? 'var(--bg-dark)' : 'var(--text-muted)',
+      darkBorder: !isLight ? 'var(--primary)' : 'var(--border)',
+      lightBg: isLight ? 'var(--primary)' : 'var(--bg)',
+      lightColor: isLight ? 'var(--bg-dark)' : 'var(--text-muted)',
+      lightBorder: isLight ? 'var(--primary)' : 'var(--border)',
+      reminderOn: this.state.reminderOn,
+      reminderBodyMargin: this.state.reminderOn ? '0' : '0',
+      reminderTrackColor: this.state.reminderOn ? 'var(--primary)' : 'var(--border)',
+      reminderThumbLeft: this.state.reminderOn ? '23px' : '3px',
+      reminderTime: this.state.reminderTime,
+      reminderEmail: this.state.reminderEmail,
+      toggleReminder: this.toggleReminder,
+      handleTimeChange: this.handleTimeChange,
+      handleEmailChange: this.handleEmailChange,
+      freqOptions: freqOptions
+    };
+  }
+}
+</script>
+</body>
+</html>
