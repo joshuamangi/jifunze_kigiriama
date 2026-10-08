@@ -1,0 +1,34 @@
+PYTHON ?= /opt/homebrew/bin/python3.11
+VENV := .venv
+BIN := $(VENV)/bin
+
+.PHONY: install run test lint audit-secrets migrate create-user reindex
+
+install:
+	$(PYTHON) -m venv $(VENV)
+	$(BIN)/pip install --upgrade pip
+	$(BIN)/pip install -e ".[dev]"
+	$(BIN)/pre-commit install
+
+run:
+	$(BIN)/uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 --workers 1
+
+test:
+	$(BIN)/pytest
+
+lint:
+	$(BIN)/ruff check .
+	$(BIN)/ruff format --check .
+
+audit-secrets:
+	$(BIN)/pre-commit run gitleaks --all-files
+
+# Targets named by docs/IMPLEMENTATION.md; implemented in later stages.
+migrate:
+	@echo "make migrate arrives in Stage 1" && exit 1
+
+create-user:
+	@echo "make create-user arrives in Stage 2" && exit 1
+
+reindex:
+	@echo "make reindex arrives in Stage 5" && exit 1
