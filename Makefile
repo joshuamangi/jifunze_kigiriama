@@ -1,6 +1,8 @@
 PYTHON ?= /opt/homebrew/bin/python3.11
 VENV := .venv
 BIN := $(VENV)/bin
+ENV_FILE ?= .env
+ENV_PATH := $(abspath $(ENV_FILE))
 
 .PHONY: install run test lint audit-secrets migrate create-user reindex
 
@@ -11,7 +13,9 @@ install:
 	$(BIN)/pre-commit install
 
 run:
-	$(BIN)/uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 --workers 1
+	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; \
+	$(BIN)/python -c "from app.config import Settings; Settings.from_env()" && \
+	exec $(BIN)/uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 test:
 	$(BIN)/pytest

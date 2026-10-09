@@ -72,7 +72,7 @@ Theme tokens are in `docs/theme.css` (dark default, `.theme-root.light` override
 
 <!-- Fill in once the project exists; keep them exact. -->
 - Install: `make install` (Python 3.11 venv in `.venv`, deps from `pyproject.toml`)
-- Run dev: `make run` (uvicorn with reload on 127.0.0.1:8000)
+- Run dev: `make run` (loads `.env`, uvicorn with reload on 127.0.0.1:8000)
 - Test: `make test`
 - Lint: `make lint`
 - Secret scan: `make audit-secrets`
