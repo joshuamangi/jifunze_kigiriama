@@ -25,6 +25,19 @@ def _checksum(sql: str) -> str:
     return hashlib.sha256(sql.encode("utf-8")).hexdigest()
 
 
+def pending_migrations(conn: sqlite3.Connection, directory: Path = MIGRATIONS_DIR) -> list[str]:
+    """Names of migration files that have not been applied yet (read-only)."""
+    has_table = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'"
+    ).fetchone()
+    applied = (
+        {r["version"] for r in conn.execute("SELECT version FROM schema_migrations")}
+        if has_table
+        else set()
+    )
+    return [p.name for p in sorted(directory.glob("*.sql")) if p.name[:4] not in applied]
+
+
 def apply_migrations(conn: sqlite3.Connection, directory: Path = MIGRATIONS_DIR) -> list[str]:
     """Apply pending migrations in order; return the names applied this run."""
     conn.execute(

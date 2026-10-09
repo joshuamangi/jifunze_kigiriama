@@ -13,6 +13,7 @@ from app.auth.hashing import PasswordService
 from app.auth.throttle import LoginThrottle
 from app.config import Settings
 from app.db import Database
+from app.migrate import pending_migrations
 from app.security import install_request_guard
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
@@ -25,6 +26,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if owns_db:
         app.state.db = Database(app.state.settings.database_path)
     try:
+        # Refuse to serve from an out-of-date database: otherwise every request that touches a
+        # new column fails with a 500 instead of one clear message at startup.
+        with app.state.db.read() as conn:
+            pending = pending_migrations(conn)
+        if pending:
+            raise RuntimeError(
+                f"database is not up to date (pending: {', '.join(pending)}). Run `make migrate`."
+            )
         yield
     finally:
         if owns_db:
