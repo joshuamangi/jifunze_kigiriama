@@ -1,0 +1,39 @@
+"""Account creation. Only an admin at the command line can create users; there is no sign-up."""
+
+import re
+import sqlite3
+
+from app.auth.hashing import PasswordService
+from app.db import Database
+
+USERNAME_RE = re.compile(r"^[A-Za-z0-9._-]{3,32}$")
+MIN_PASSWORD_LENGTH = 12
+MAX_PASSWORD_LENGTH = 1024
+ROLES = ("admin", "member")
+
+
+class UserError(ValueError):
+    pass
+
+
+def create_user(
+    db: Database, passwords: PasswordService, username: str, password: str, role: str
+) -> int:
+    if not USERNAME_RE.match(username):
+        raise UserError("username must be 3-32 characters: letters, digits, '.', '_' or '-'")
+    if role not in ROLES:
+        raise UserError("role must be 'admin' or 'member'")
+    if not MIN_PASSWORD_LENGTH <= len(password) <= MAX_PASSWORD_LENGTH:
+        raise UserError(
+            f"password must be {MIN_PASSWORD_LENGTH} to {MAX_PASSWORD_LENGTH} characters"
+        )
+    password_hash = passwords.hash(password)
+    try:
+        with db.write() as conn:
+            cur = conn.execute(
+                "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+                (username, password_hash, role),
+            )
+            return cur.lastrowid
+    except sqlite3.IntegrityError:
+        raise UserError("that username is already taken") from None

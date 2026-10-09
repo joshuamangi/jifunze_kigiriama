@@ -50,7 +50,7 @@ Three layers: Lexicon (words) / Grammar rules (tables above) / App logic (drills
 
 The app is reachable from the public internet through the tunnel, so:
 
-- Every route except `/login`, static assets and `/healthz` requires a session.
+- Every route except the login page, `POST /api/login`, static assets and `/healthz` requires a session. State-changing requests also need the `X-Requested-With: jifunze` header and a matching `Origin`.
 - Hashed passwords (argon2/bcrypt), HttpOnly + Secure + SameSite=Lax session cookie, login rate limiting.
 - No self sign-up: the admin creates accounts (small trusted group).
 - Admin routes check `role == 'admin'` server-side; hiding the UI is not enough.
