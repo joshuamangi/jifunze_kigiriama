@@ -71,6 +71,11 @@ def get_history(entry_id: int, user: CurrentUser, db: Db) -> list[dict]:
     return entries.entry_history(db, user, entry_id)
 
 
+@router.post("/api/entries/{entry_id}/history/{history_id}/revert")
+def revert_entry(entry_id: int, history_id: int, user: CurrentUser, db: Db) -> dict:
+    return entries.revert_entry(db, user, entry_id, history_id)
+
+
 @router.get("/api/categories")
 def get_categories(user: CurrentUser, db: Db) -> list[dict]:
     return entries.category_counts(db, user)

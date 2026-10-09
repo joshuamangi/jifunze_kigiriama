@@ -199,6 +199,7 @@ def entry_history(db: Database, user: dict, entry_id: int) -> list[dict]:
     out = []
     for r in rows:
         item = {
+            "id": r["id"],
             "changed_at": r["changed_at"],
             "changed_by_you": r["changed_by"] == user["id"],
             "old": {
@@ -213,6 +214,24 @@ def entry_history(db: Database, user: dict, entry_id: int) -> list[dict]:
             item["changed_by"] = r["changed_by_name"]
         out.append(item)
     return out
+
+
+def revert_entry(db: Database, user: dict, entry_id: int, history_id: int) -> dict:
+    """Restore the content fields an entry had before one history row's edit.
+
+    This is an ordinary edit (same permissions, same effects, its own history row), so a revert
+    can itself be undone. Status is not restored: members' edits go back to review as usual and
+    an admin keeps the current status.
+    """
+    with db.read() as conn:
+        _visible_row(conn, user, entry_id)  # 404 if the entry is not visible to the caller
+        old = conn.execute(
+            "SELECT * FROM entry_history WHERE id = ? AND entry_id = ?", (history_id, entry_id)
+        ).fetchone()
+    if old is None:
+        raise HTTPException(status_code=404, detail="history entry not found")
+    patch = {field: old[f"old_{field}"] for field in CONTENT_FIELDS}
+    return update_entry(db, user, entry_id, patch)
 
 
 # ---- moderation (admin only; the router enforces require_admin) -------------------------------

@@ -214,6 +214,7 @@ def test_there_is_no_registration_route_and_public_routes_are_known(app):
         "/api/entries",
         "/api/entries/{entry_id}",
         "/api/entries/{entry_id}/history",
+        "/api/entries/{entry_id}/history/{history_id}/revert",
         "/api/categories",
         "/api/suggestions/gap",
         "/api/review",

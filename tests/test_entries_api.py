@@ -274,3 +274,83 @@ def test_category_counts_follow_visibility(amina, baraka, boss):
 def test_anonymous_requests_are_rejected(app, method, path):
     anon = TestClient(app, headers=GUARD_HEADERS)
     assert anon.request(method, path, json={}).status_code == 401
+
+
+# ---- undo an edit (revert) ------------------------------------------------------------------
+def revert(client, eid, hid):
+    return client.post(f"/api/entries/{eid}/history/{hid}/revert")
+
+
+def test_revert_restores_the_old_content_and_is_itself_recorded(amina):
+    eid = add(amina)["id"]
+    amina.patch(f"/api/entries/{eid}", json={"english": "one (1)", "category": "family"})
+    first = amina.get(f"/api/entries/{eid}/history").json()[0]
+    assert "id" in first
+
+    restored = revert(amina, eid, first["id"])
+    assert restored.status_code == 200
+    body = restored.json()
+    assert (body["english"], body["category"], body["giriama"]) == ("one", "numbers", "mwenga")
+    history = amina.get(f"/api/entries/{eid}/history").json()
+    assert len(history) == 2  # the edit and the revert
+    assert history[0]["old"]["english"] == "one (1)"  # what the revert replaced
+
+
+def test_a_revert_can_itself_be_undone(amina):
+    eid = add(amina)["id"]
+    amina.patch(f"/api/entries/{eid}", json={"english": "one (1)"})
+    edit_row = amina.get(f"/api/entries/{eid}/history").json()[0]["id"]
+    revert(amina, eid, edit_row)
+    revert_row = amina.get(f"/api/entries/{eid}/history").json()[0]["id"]
+    again = revert(amina, eid, revert_row)
+    assert again.json()["english"] == "one (1)"
+
+
+def test_revert_to_identical_content_writes_nothing(amina):
+    eid = add(amina)["id"]
+    amina.patch(f"/api/entries/{eid}", json={"english": "one (1)"})
+    row = amina.get(f"/api/entries/{eid}/history").json()[0]["id"]
+    revert(amina, eid, row)
+    count = len(amina.get(f"/api/entries/{eid}/history").json())
+    assert revert(amina, eid, row).status_code == 200  # already back to that content
+    assert len(amina.get(f"/api/entries/{eid}/history").json()) == count
+
+
+def test_member_revert_of_an_approved_entry_goes_back_to_review(amina, boss):
+    eid = add(amina)["id"]
+    boss.post(f"/api/review/{eid}/approve")
+    amina.patch(f"/api/entries/{eid}", json={"english": "one (1)"})
+    boss.post(f"/api/review/{eid}/approve")
+    row = amina.get(f"/api/entries/{eid}/history").json()[-1]["id"]
+    restored = revert(amina, eid, row).json()
+    assert restored["verification_status"] == "pending"
+
+
+def test_admin_revert_keeps_the_current_status(boss):
+    eid = add(boss)["id"]
+    boss.patch(f"/api/entries/{eid}", json={"english": "one (1)"})
+    row = boss.get(f"/api/entries/{eid}/history").json()[0]["id"]
+    assert revert(boss, eid, row).json()["verification_status"] == "unverified"
+
+
+def test_revert_follows_the_edit_rules(amina, baraka, boss):
+    eid = add(amina)["id"]
+    amina.patch(f"/api/entries/{eid}", json={"english": "one (1)"})
+    row = amina.get(f"/api/entries/{eid}/history").json()[0]["id"]
+    assert revert(baraka, eid, row).status_code == 404  # cannot even see the pending entry
+    boss.post(f"/api/review/{eid}/approve")
+    assert revert(baraka, eid, row).status_code == 403  # sees it, may not change it
+    boss.patch(f"/api/entries/{eid}", json={"verification_status": "native_verified"})
+    assert revert(amina, eid, row).status_code == 403  # locked for members
+    assert revert(boss, eid, row).status_code == 200
+
+
+def test_revert_needs_the_matching_entry_and_a_session(app, amina):
+    first = add(amina)["id"]
+    second = add(amina, TWO)["id"]
+    amina.patch(f"/api/entries/{first}", json={"english": "one (1)"})
+    row = amina.get(f"/api/entries/{first}/history").json()[0]["id"]
+    assert revert(amina, second, row).status_code == 404  # history row of another entry
+    assert revert(amina, first, 9999).status_code == 404
+    anon = TestClient(app, headers=GUARD_HEADERS)
+    assert revert(anon, first, row).status_code == 401
