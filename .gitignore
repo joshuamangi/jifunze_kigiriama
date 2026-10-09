@@ -34,3 +34,8 @@ build/
 
 # OS / editor
 .DS_Store
+
+# curl cookie jars (hold live session tokens)
+jar
+*.jar
+cookies*.txt
