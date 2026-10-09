@@ -52,3 +52,17 @@ def make_user(app, db):
         return create_user(db, app.state.passwords, username, password, role)
 
     return _make
+
+
+@pytest.fixture
+def login_as(app, make_user):
+    """Create a user and return a logged-in client for them (one client per user)."""
+    from tests.helpers import login
+
+    def _login_as(username, role="member"):
+        make_user(username, role=role)
+        c = TestClient(app, headers=GUARD_HEADERS)
+        assert login(c, username).status_code == 200
+        return c
+
+    return _login_as

@@ -35,3 +35,6 @@ select = ["E", "F", "I", "UP", "B", "S"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+# SQL here is assembled only from code constants (VISIBLE, NOW) and a column whitelist
+# (PATCHABLE); all user values are bound parameters.
+"app/entries.py" = ["S608"]
