@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.auth import router as auth_router
+from app.api.entries import router as entries_router
+from app.api.review import router as review_router
 from app.auth.hashing import PasswordService
 from app.auth.throttle import LoginThrottle
 from app.config import Settings
@@ -33,6 +35,8 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
     app.state.throttle = LoginThrottle()
     install_request_guard(app)
     app.include_router(auth_router)
+    app.include_router(entries_router)
+    app.include_router(review_router)
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:

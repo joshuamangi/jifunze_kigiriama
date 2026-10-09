@@ -206,7 +206,20 @@ def test_allowed_origins_setting_is_honoured(db, make_user):
 def test_there_is_no_registration_route_and_public_routes_are_known(app):
     paths = set(app.openapi()["paths"])
     assert not [p for p in paths if "regist" in p or "signup" in p or "sign-up" in p]
-    assert paths == {"/healthz", "/api/login", "/api/logout", "/api/me"}
+    assert paths == {
+        "/healthz",
+        "/api/login",
+        "/api/logout",
+        "/api/me",
+        "/api/entries",
+        "/api/entries/{entry_id}",
+        "/api/entries/{entry_id}/history",
+        "/api/categories",
+        "/api/suggestions/gap",
+        "/api/review",
+        "/api/review/{entry_id}/approve",
+        "/api/review/{entry_id}/decline",
+    }
 
 
 def test_healthz_needs_no_session(client):
