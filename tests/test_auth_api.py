@@ -146,6 +146,9 @@ def test_anonymous_gets_401_member_gets_403_admin_gets_200(app, make_user):
     def admin_only(user: dict = Depends(require_admin)):  # noqa: B008
         return {"ok": True}
 
+    # The static mount at "/" matches everything, so a route added later must go in front of it.
+    app.router.routes.insert(0, app.router.routes.pop())
+
     make_user("member1", role="member")
     make_user("boss", role="admin")
     with TestClient(app, headers=GUARD_HEADERS) as anon:
