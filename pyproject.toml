@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "fastapi",  # web framework
     "uvicorn",  # ASGI server; plain build, no [standard] extras, to keep the Pi footprint small
+    "sqlite-vec",  # vec0 vector tables for semantic search; ships aarch64 wheels
 ]
 
 [project.optional-dependencies]
