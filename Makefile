@@ -4,7 +4,7 @@ BIN := $(VENV)/bin
 ENV_FILE ?= .env
 ENV_PATH := $(abspath $(ENV_FILE))
 
-.PHONY: install run test lint audit-secrets migrate create-user reindex
+.PHONY: install run test lint audit-secrets migrate seed create-user reindex
 
 install:
 	$(PYTHON) -m venv $(VENV)
@@ -29,7 +29,10 @@ audit-secrets:
 
 # Targets named by docs/IMPLEMENTATION.md; implemented in later stages.
 migrate:
-	@echo "make migrate arrives in Stage 1" && exit 1
+	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; $(BIN)/python -m app.migrate
+
+seed:
+	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; $(BIN)/python -m app.seed
 
 create-user:
 	@echo "make create-user arrives in Stage 2" && exit 1
