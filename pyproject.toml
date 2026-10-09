@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "fastapi",  # web framework
     "uvicorn",  # ASGI server; plain build, no [standard] extras, to keep the Pi footprint small
+    "argon2-cffi",  # argon2id password hashing; ships aarch64 wheels
     "sqlite-vec",  # vec0 vector tables for semantic search; ships aarch64 wheels
 ]
 
@@ -23,6 +24,7 @@ packages = ["app"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
