@@ -21,7 +21,7 @@ change the stages there.
       failure-alert email, one real deploy and one deliberately failing deploy.
 - [ ] Stage 9 decision: `deploy.sh` runs as the `jifunze` service user for now. Decide whether the
       GitHub runner gets its own user (it would then need group access to `data/` and the env file).
-- [ ] Optional: `make check-nginx` (needs Docker running) as a syntax check on the Mac.
+- [x] `make check-nginx` passed on the Mac (nginx:stable, 2026-10-10). Still run `sudo nginx -t` on the Pi.
 
 ## On the Raspberry Pi (needs the hardware, cannot be done on the Mac)
 - [ ] `make bench-argon2`: tune `ARGON2_MEMORY_KIB` / `ARGON2_TIME_COST` so a login takes a
