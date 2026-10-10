@@ -159,3 +159,17 @@ def test_bottom_nav_has_five_items_and_login_has_none():
         assert f"'{label}'" in nav
     assert "'/review'" not in nav  # Review is reached from Settings
     assert "const showNav = path !== '/login'" in app_js
+
+
+def test_form_fields_are_at_least_16px_so_ios_does_not_zoom_on_focus():
+    # iOS Safari zooms the whole page when a field with text under 16px gets focus, and the zoom
+    # stays after the single-page app navigates. 1rem is 16px at the default browser size.
+    css = (WEB / "css/app.css").read_text()
+    rule = re.search(r"\.input \{(.*?)\}", css, re.S).group(1)
+    size = re.search(r"font-size:\s*([\d.]+)(rem|px)", rule)
+    assert size, ".input must set its own font-size"
+    value, unit = float(size.group(1)), size.group(2)
+    assert value >= 1 if unit == "rem" else value >= 16, f".input font-size is {value}{unit}"
+    # the search box and every other input reuse .input; none may override it with a smaller size
+    for source in (WEB / "js").rglob("*.js"):
+        assert not re.search(r"font-size", source.read_text()), source.name
