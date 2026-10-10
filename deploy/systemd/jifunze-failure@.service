@@ -1,0 +1,28 @@
+# Emails the owner when a jifunze unit fails. Started by OnFailure=jifunze-failure@%n.service;
+# the instance name (%i) is the unit that failed. Needs ALERT_EMAIL and SMTP_* in the env file.
+[Unit]
+Description=Jifunze Kigiriama failure alert for %i
+
+[Service]
+Type=oneshot
+User=jifunze
+Group=jifunze
+# systemd-journal lets the alert include the failing unit's last log lines.
+SupplementaryGroups=systemd-journal
+WorkingDirectory=/srv/jifunze/current
+EnvironmentFile=/etc/jifunze/jifunze.env
+Environment=PYTHONPATH=/srv/jifunze/current
+ExecStart=/srv/jifunze/current/.venv/bin/python scripts/notify_failure.py %i
+MemoryMax=128M
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=

@@ -7,7 +7,7 @@ ENV_PATH := $(abspath $(ENV_FILE))
 # timeout: slow-client timeouts belong to Nginx (client_header_timeout, client_body_timeout).
 UVICORN_LIMITS := --limit-concurrency 64 --timeout-keep-alive 5 --timeout-graceful-shutdown 10 --no-server-header --no-access-log
 
-.PHONY: install run test lint audit audit-deps audit-secrets migrate seed create-user bench-argon2 download-model bench-embed reindex send-reminders import-grammar
+.PHONY: install run test lint lock check-nginx audit audit-deps audit-secrets migrate seed create-user bench-argon2 download-model bench-embed reindex send-reminders import-grammar
 
 install:
 	$(PYTHON) -m venv $(VENV)
@@ -26,6 +26,21 @@ test:
 lint:
 	$(BIN)/ruff check .
 	$(BIN)/ruff format --check .
+	$(BIN)/shellcheck -x -P SCRIPTDIR deploy/*.sh
+
+# Regenerate the hash-pinned requirements.lock the Pi installs from (needs uv on the Mac; uv is a
+# build tool only, not a dependency of the app). Review the diff, then commit it.
+lock:
+	uv pip compile pyproject.toml --generate-hashes --universal --python-version 3.11 -o requirements.lock
+
+# nginx -t on the real config in a throwaway container (needs Docker running). The test suite
+# also does this when an nginx binary is installed.
+check-nginx:
+	docker run --rm \
+	  -v $(CURDIR)/deploy/nginx/jifunze.conf:/etc/nginx/conf.d/jifunze.conf:ro \
+	  -v $(CURDIR)/deploy/nginx/jifunze-proxy.conf:/etc/nginx/snippets/jifunze-proxy.conf:ro \
+	  -v $(CURDIR)/deploy/nginx/jifunze-security-headers.conf:/etc/nginx/snippets/jifunze-security-headers.conf:ro \
+	  nginx:stable nginx -t
 
 # Dependency vulnerabilities (needs network) and committed secrets, together.
 audit: audit-deps audit-secrets

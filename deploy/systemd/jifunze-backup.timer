@@ -1,0 +1,11 @@
+[Unit]
+Description=Jifunze Kigiriama nightly database backup
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+RandomizedDelaySec=10min
+# If the Pi was off at 03:30, back up as soon as it is next on.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

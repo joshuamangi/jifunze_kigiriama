@@ -1,0 +1,12 @@
+# Every 15 minutes. The script sends at most one email per user per local day, so running often
+# is safe; it is how a reminder lands near the time each person chose.
+[Unit]
+Description=Jifunze Kigiriama study reminders, every 15 minutes
+
+[Timer]
+OnCalendar=*:0/15
+AccuracySec=1min
+# No Persistent=: after downtime, one catch-up run is enough and the script is idempotent.
+
+[Install]
+WantedBy=timers.target
