@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.auth import router as auth_router
 from app.api.entries import router as entries_router
 from app.api.learn import router as learn_router
+from app.api.reminders import router as reminders_router
 from app.api.review import router as review_router
 from app.api.search import router as search_router
 from app.auth.hashing import PasswordService
@@ -76,6 +77,7 @@ def create_app(
     app.include_router(review_router)
     app.include_router(search_router)
     app.include_router(learn_router)
+    app.include_router(reminders_router)
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:

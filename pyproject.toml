@@ -43,4 +43,5 @@ select = ["E", "F", "I", "UP", "B", "S"]
 "app/entries.py" = ["S608"]
 "app/embeddings/worker.py" = ["S608"]  # NOW is a constant SQL expression, no user text
 "app/services/learn.py" = ["S608"]  # APPROVED and NOW are constants; user values are bound
+"app/services/grammar.py" = ["S608"]  # table names come from a fixed tuple, values are bound
 "app/search.py" = ["S608"]  # VISIBLE and placeholder lists are built from constants

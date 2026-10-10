@@ -1,0 +1,19 @@
+{
+  "_format": "Review file for grammar rules. Fill it by hand from Taylor's front matter (never from a model). Import with: make import-grammar FILE=path/to/your-file.json. A row is imported only when hand_checked is true.",
+  "_fields": {
+    "label": "A short name you choose for the rule or class",
+    "rule": "A JSON object holding the rule as you transcribed it. You decide its keys.",
+    "source_page": "The page of the source it came from, e.g. 'Taylor 1891, p. N'",
+    "confidence": "low, medium or high: how sure you are the OCR text was read correctly",
+    "hand_checked": "true only after you have checked the row against the page image"
+  },
+  "_example_row": {
+    "label": "<TODO: name>",
+    "rule": {},
+    "source_page": "<TODO: page>",
+    "confidence": "low",
+    "hand_checked": false
+  },
+  "noun_classes": [],
+  "verb_paradigms": []
+}

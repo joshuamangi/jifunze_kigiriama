@@ -4,7 +4,7 @@ BIN := $(VENV)/bin
 ENV_FILE ?= .env
 ENV_PATH := $(abspath $(ENV_FILE))
 
-.PHONY: install run test lint audit-secrets migrate seed create-user bench-argon2 download-model bench-embed reindex
+.PHONY: install run test lint audit-secrets migrate seed create-user bench-argon2 download-model bench-embed reindex send-reminders import-grammar
 
 install:
 	$(PYTHON) -m venv $(VENV)
@@ -49,3 +49,9 @@ bench-embed:
 
 reindex:
 	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; $(BIN)/python scripts/reindex.py
+
+send-reminders:
+	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; $(BIN)/python scripts/send_reminders.py $(ARGS)
+
+import-grammar:
+	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; $(BIN)/python scripts/import_grammar.py "$(FILE)"

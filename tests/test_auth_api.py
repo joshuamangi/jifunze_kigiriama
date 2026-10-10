@@ -224,6 +224,7 @@ def test_there_is_no_registration_route_and_public_routes_are_known(app):
         "/api/learn/summary",
         "/api/learn/session",
         "/api/learn/review",
+        "/api/reminders",
         "/api/review",
         "/api/review/{entry_id}/approve",
         "/api/review/{entry_id}/decline",
