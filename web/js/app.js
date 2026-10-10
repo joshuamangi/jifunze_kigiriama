@@ -49,7 +49,7 @@ function tabbar(activePath) {
       'div',
       { class: 'tabbar-inner' },
       NAV.map(([path, label, iconName]) =>
-        h('a', { class: 'tab', href: `#${path}`, 'aria-current': path === active ? 'page' : undefined }, icon(iconName, 21), label),
+        h('a', { class: 'tab', href: `#${path}`, 'aria-current': path === active ? 'page' : undefined }, icon(iconName, 24), label),
       ),
     ),
   );

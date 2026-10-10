@@ -31,11 +31,11 @@ export default async function home() {
       h(
         'section',
         { class: 'card mb' },
-        h('div', { class: 'row' }, h('span', { class: 'primary' }, icon('clock', 19)), h('h2', { class: 'h2 no-margin' }, "Today's 20-minute session")),
+        h('div', { class: 'row' }, h('span', { class: 'primary' }, icon('clock', 20)), h('h2', { class: 'h2 no-margin' }, "Today's 20-minute session")),
         total < MIN_ENTRIES_FOR_SESSION
           ? h('p', { class: 'small muted' }, `Add at least ${MIN_ENTRIES_FOR_SESSION} entries to unlock your first guided session — every review is built from words and phrases in the dictionary.`)
           : h('p', { class: 'small muted' }, 'Daily study sessions are coming in a later update.'),
-        h('a', { class: 'btn btn-primary', href: `#/add?category=${encodeURIComponent(gap.id)}` }, icon('add', 18), total === 0 ? 'Add your first entries' : 'Add entries'),
+        h('a', { class: 'btn btn-primary', href: `#/add?category=${encodeURIComponent(gap.id)}` }, icon('add', 20), total === 0 ? 'Add your first entries' : 'Add entries'),
       ),
       h('h2', { class: 'eyebrow' }, 'Suggested topics to start with'),
       topics.map((topic) =>
@@ -49,10 +49,10 @@ export default async function home() {
             h('div', { class: 'small muted' }, TOPIC_DESCRIPTIONS[topic.id] || ''),
             h('div', { class: 'small muted' }, topic.count === 1 ? '1 entry' : `${topic.count} entries`),
           ),
-          h('span', { class: 'muted' }, icon('arrow', 15)),
+          h('span', { class: 'muted' }, icon('arrow', 16)),
         ),
       ),
-      h('p', { class: 'mt-lg' }, h('a', { class: 'btn', href: '#/culture' }, 'Explore Giriama culture & media', icon('arrow', 14))),
+      h('p', { class: 'mt-lg' }, h('a', { class: 'btn', href: '#/culture' }, 'Explore Giriama culture & media', icon('arrow', 16))),
     ),
   );
 }

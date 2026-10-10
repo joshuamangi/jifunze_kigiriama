@@ -17,8 +17,8 @@ export default async function review() {
   }
 
   function card(item) {
-    const decline = h('button', { class: 'btn grow', type: 'button' }, icon('x', 14), 'Decline');
-    const approve = h('button', { class: 'btn btn-success grow', type: 'button' }, icon('check', 14), 'Approve');
+    const decline = h('button', { class: 'btn grow', type: 'button' }, icon('x', 16), 'Decline');
+    const approve = h('button', { class: 'btn btn-success grow', type: 'button' }, icon('check', 16), 'Approve');
     const act = async (verb) => {
       decline.disabled = approve.disabled = true;
       try {

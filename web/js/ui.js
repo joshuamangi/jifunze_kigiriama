@@ -49,7 +49,7 @@ export function errorBanner(error, retry) {
   const message = offline ? "You're offline. Connect to the internet to load this." : (error && error.message) || 'Something went wrong.';
   return banner(
     offline ? 'warn' : 'danger',
-    icon(offline ? 'offline' : 'x', 18),
+    icon(offline ? 'offline' : 'x', 20),
     h('div', { class: 'grow' }, message, retry ? h('div', null, h('button', { class: 'btn', type: 'button', onclick: retry }, 'Try again')) : null),
   );
 }
@@ -59,12 +59,12 @@ export function loading(text = 'Loading…') {
 }
 
 export function emptyState(iconName, text) {
-  return h('div', { class: 'empty' }, icon(iconName, 34), h('div', null, text));
+  return h('div', { class: 'empty' }, icon(iconName, 32), h('div', null, text));
 }
 
 export function themeButton() {
   const button = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Toggle colour theme' });
-  const paint = () => button.replaceChildren(icon(currentTheme() === 'dark' ? 'sun' : 'moon', 17));
+  const paint = () => button.replaceChildren(icon(currentTheme() === 'dark' ? 'sun' : 'moon', 16));
   button.addEventListener('click', () => setTheme(currentTheme() === 'dark' ? 'light' : 'dark'));
   document.addEventListener('themechange', paint);
   paint();

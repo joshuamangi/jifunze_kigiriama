@@ -20,7 +20,7 @@ export default async function add({ user, params }) {
   const category = chipGroup({ label: 'Word group', options: categoryOptions, value: startCategory });
   const source = chipGroup({ label: 'Source', options: SOURCE_CHIPS, value: 'own' });
   const formMessage = h('div', { 'aria-live': 'polite' });
-  const save = h('button', { class: 'btn btn-primary btn-block', type: 'submit' }, icon('add', 18), 'Save entry');
+  const save = h('button', { class: 'btn btn-primary btn-block', type: 'submit' }, icon('add', 20), 'Save entry');
   const form = h(
     'form',
     { class: 'card mb', novalidate: true },
@@ -141,7 +141,7 @@ export default async function add({ user, params }) {
     const editForm = h(
       'form',
       { novalidate: true },
-      lockedReason ? banner('info', icon('lock', 18), lockedReason) : null,
+      lockedReason ? banner('info', icon('lock', 20), lockedReason) : null,
       eg.node,
       ee.node,
       ec ? [h('div', { class: 'field-label' }, 'Word group'), ec.node] : h('p', { class: 'small muted' }, `Group: ${labelOf[entry.category] || entry.category}`),
@@ -181,7 +181,7 @@ export default async function add({ user, params }) {
 
     const historyBox = h('div');
     const canSeeHistory = isAdmin || entry.mine;
-    dialog.append(h('div', { class: 'sheet-body' }, h('h2', { class: 'h1' }, 'Edit entry'), editForm, canSeeHistory ? h('section', { class: 'mt-lg' }, h('h3', { class: 'h2 row' }, icon('history', 18), 'Earlier versions'), historyBox) : null));
+    dialog.append(h('div', { class: 'sheet-body' }, h('h2', { class: 'h1' }, 'Edit entry'), editForm, canSeeHistory ? h('section', { class: 'mt-lg' }, h('h3', { class: 'h2 row' }, icon('history', 20), 'Earlier versions'), historyBox) : null));
     document.body.append(dialog);
     dialog.addEventListener('close', () => dialog.remove());
     dialog.showModal();
@@ -243,9 +243,9 @@ export default async function add({ user, params }) {
     h(
       'main',
       { class: 'screen' },
-      startCategory === gap.id ? banner('info', icon('bulb', 18), gap.count === 0 ? `Today's gap: you have no ${gap.label} entries yet — the form below is set to that group, ready to go.` : `Today's gap: ${gap.label} has the fewest entries (${gap.count}) — the form below is set to that group.`) : null,
+      startCategory === gap.id ? banner('info', icon('bulb', 20), gap.count === 0 ? `Today's gap: you have no ${gap.label} entries yet — the form below is set to that group, ready to go.` : `Today's gap: ${gap.label} has the fewest entries (${gap.count}) — the form below is set to that group.`) : null,
       form,
-      h('div', { class: 'search' }, icon('search', 17), searchInput),
+      h('div', { class: 'search' }, icon('search', 16), searchInput),
       h('p', { class: 'small muted' }, 'Keyword search over English and Kigiriama text. Search by meaning arrives in a later update.'),
       h('div', { class: 'field-label' }, 'Filter by group'),
       filter.node,

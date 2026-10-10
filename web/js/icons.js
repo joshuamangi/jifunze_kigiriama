@@ -34,7 +34,7 @@ const ICONS = {
 
 const FILLED = new Set(['moon', 'flame', 'play']);
 
-export function icon(name, size = 21) {
+export function icon(name, size = 20) {
   const parts = ICONS[name];
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');

@@ -63,7 +63,8 @@ Theme tokens are in `docs/theme.css` (dark default, `.theme-root.light` override
 
 - Font: **Kodchasan** (400/500/600/700), antialiased.
 - Icons: hand-drawn stroke SVGs, no emoji.
-- Touch targets at least 44px. Real `<button>` and `<a>` elements.
+- Touch targets at least 44px (`--tap: 2.75rem`). Real `<button>` and `<a>` elements.
+- Sizes: rem/em only (1-2px hairlines excepted), spacing and sizes in multiples of 4px from the `--space-*` and `--text-*` tokens in `web/css/app.css`; form fields at least 1rem so iOS does not zoom. A test enforces it.
 - Bottom nav, 5 items: Home, Add, Learn, Culture, Settings. Login has no nav. Admin Review is reached from Settings, not the nav.
 - Don't invent stats, users or placeholder text.
 - The clickable prototype (Claude Design artifact) is the visual reference for screen layout.

@@ -131,7 +131,7 @@ def test_no_emoji_and_no_inline_styles(path):
 
 def test_touch_targets_use_the_44px_variable_and_fonts_are_self_hosted():
     css = (WEB / "css/app.css").read_text()
-    assert "--tap: 44px" in css
+    assert "--tap: 2.75rem" in css  # 44px, the minimum touch target
     assert css.count("var(--tap)") >= 8
     for sheet in (WEB / "css").glob("*.css"):
         assert "googleapis" not in sheet.read_text()
@@ -173,3 +173,48 @@ def test_form_fields_are_at_least_16px_so_ios_does_not_zoom_on_focus():
     # the search box and every other input reuse .input; none may override it with a smaller size
     for source in (WEB / "js").rglob("*.js"):
         assert not re.search(r"font-size", source.read_text()), source.name
+
+
+# ---- sizes: rem/em only, on a 4px grid ---------------------------------------------------------
+def _css_lengths(css: str):
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    return re.findall(r"(?<![\w.#-])(-?\d*\.?\d+)(px|rem|em)\b", css)
+
+
+def test_css_uses_rem_and_em_with_only_hairline_pixel_values():
+    pixel_values = {
+        float(v) for v, unit in _css_lengths((WEB / "css/app.css").read_text()) if unit == "px"
+    }
+    # 0-2px hairlines (borders, focus outline) and the 999px "pill" radius are the only pixels
+    assert pixel_values <= {0.0, 1.0, 2.0, 999.0}, pixel_values
+
+
+def test_every_rem_value_is_a_multiple_of_4px():
+    css = (WEB / "css/app.css").read_text()
+    off_grid = sorted(
+        {v for v, unit in _css_lengths(css) if unit == "rem" and (float(v) * 16) % 4 != 0}
+    )
+    assert not off_grid, f"rem values not on the 4px grid: {off_grid}"
+
+
+def test_spacing_and_type_tokens_are_defined_once_in_root():
+    css = (WEB / "css/app.css").read_text()
+    root = re.search(r":root \{(.*?)\n\}", css, re.S).group(1)
+    for token in (
+        "--space-1: 0.25rem",
+        "--space-4: 1rem",
+        "--text-xs: 0.75rem",
+        "--text-md: 1rem",
+        "--tap: 2.75rem",
+    ):
+        assert token in root, token
+
+
+def test_icon_sizes_are_multiples_of_4():
+    sizes = []
+    for path in JS_FILES:
+        for line in path.read_text().splitlines():
+            if "icon(" in line:
+                sizes += [int(s) for s in re.findall(r",\s*(\d{2})\)", line)]
+    sizes += [int(s) for s in re.findall(r"size = (\d+)", (WEB / "js/icons.js").read_text())]
+    assert sizes and all(s % 4 == 0 for s in sizes), sorted(set(sizes))

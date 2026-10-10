@@ -9,7 +9,7 @@ function appearanceSwitch() {
     for (const [name, button] of Object.entries(buttons)) button.setAttribute('aria-pressed', String(name === currentTheme()));
   };
   for (const [name, label, iconName] of [['dark', 'Dark', 'moon'], ['light', 'Light', 'sun']]) {
-    buttons[name] = h('button', { class: 'chip', type: 'button' }, icon(iconName, 17), label);
+    buttons[name] = h('button', { class: 'chip', type: 'button' }, icon(iconName, 16), label);
     buttons[name].addEventListener('click', () => { setTheme(name); paint(); });
   }
   paint();
@@ -31,7 +31,7 @@ async function adminCard() {
 }
 
 export default async function settings({ user, navigate, setUser }) {
-  const logout = h('button', { class: 'btn btn-block', type: 'button' }, icon('logout', 18), 'Log out');
+  const logout = h('button', { class: 'btn btn-block', type: 'button' }, icon('logout', 20), 'Log out');
   logout.addEventListener('click', async () => {
     logout.disabled = true;
     try {
@@ -57,7 +57,7 @@ export default async function settings({ user, navigate, setUser }) {
       h('h2', { class: 'eyebrow' }, 'Account'),
       h('div', { class: 'card stack' }, h('div', { class: 'row' }, h('span', { class: 'primary' }, icon('user', 20)), h('div', { class: 'grow' }, h('div', { class: 'strong' }, user.username), h('div', { class: 'small muted' }, user.role === 'admin' ? 'Admin' : 'Member'))), logout),
       h('h2', { class: 'eyebrow mt-lg' }, 'Study reminders'),
-      h('div', { class: 'card notice-off' }, h('div', { class: 'row' }, h('span', { class: 'primary' }, icon('mail', 19)), h('div', { class: 'grow' }, h('div', { class: 'strong' }, 'Daily email reminder'), h('div', { class: 'small muted' }, 'Not available yet. Reminders will be switched on in a later update.')))),
+      h('div', { class: 'card notice-off' }, h('div', { class: 'row' }, h('span', { class: 'primary' }, icon('mail', 20)), h('div', { class: 'grow' }, h('div', { class: 'strong' }, 'Daily email reminder'), h('div', { class: 'small muted' }, 'Not available yet. Reminders will be switched on in a later update.')))),
       h('h2', { class: 'eyebrow mt-lg' }, 'Appearance'),
       appearanceSwitch(),
       user.role === 'admin' ? await adminCard() : null,
