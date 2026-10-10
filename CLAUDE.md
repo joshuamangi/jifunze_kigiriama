@@ -37,7 +37,7 @@ SQLite stores; it does not "learn". Teaching logic lives in app code that combin
 
 ## Teaching model
 
-Three layers: Lexicon (words) / Grammar rules (tables above) / App logic (drills). Difficulty ladder, 8 tiers: Sounds & orthography -> Core vocabulary -> Noun classes -> Verb morphology -> Proverbs -> Single verses -> Short passages -> Guided reading. Review scheduling is SM-2 style. Daily session target is about 20 minutes. Home screen suggests the category with the fewest entries.
+Three layers: Lexicon (words) / Grammar rules (tables above) / App logic (drills). Difficulty ladder, 8 tiers: Sounds & orthography -> Core vocabulary -> Noun classes -> Verb morphology -> Proverbs -> Single verses -> Short passages -> Guided reading. Review scheduling is SM-2 style (`app/services/srs.py`, state only in `user_progress`; reviews are logged in `review_log` for the streak). Daily session target is about 20 minutes (40 cards, 8 new a day). Tiers 1 (spelling practice) and 2 (recognise/recall) are live and built only from existing entries; 3-8 stay locked. `APP_TIMEZONE` defines "today" for due dates, the streak and reminder times. Spelling is compared after trim/case-fold only, never folding accents or letters. Home screen suggests the category with the fewest entries.
 
 ## Verified sources (the only Kigiriama sources)
 

@@ -20,6 +20,7 @@ const SHELL = [
   '/js/screens/home.js',
   '/js/screens/add.js',
   '/js/screens/learn.js',
+  '/js/screens/study.js',
   '/js/screens/culture.js',
   '/js/screens/settings.js',
   '/js/screens/review.js',

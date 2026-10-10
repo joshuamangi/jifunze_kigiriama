@@ -194,3 +194,22 @@ dialog.sheet::backdrop { background: color-mix(in oklab, var(--bg-dark) 70%, tra
 .history-item .entry-english { margin-bottom: var(--space-1); }
 .stats .card + .card { margin-top: 0; }
 .icon { flex-shrink: 0; }
+
+/* study screen */
+.progress { width: 100%; height: var(--space-2); appearance: none; border: 0; border-radius: var(--space-1); overflow: hidden; background: var(--border-muted); }
+.progress::-webkit-progress-bar { background: var(--border-muted); }
+.progress::-webkit-progress-value { background: var(--primary); }
+.progress::-moz-progress-bar { background: var(--primary); }
+.drill-prompt { font-size: var(--text-xl); font-weight: 600; margin: var(--space-2) 0 var(--space-5); overflow-wrap: anywhere; }
+.options { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+.option {
+  width: 100%; min-height: var(--tap); padding: var(--space-3) var(--space-4); text-align: left;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-light);
+  color: var(--text); font-size: var(--text-md);
+}
+.option[disabled] { opacity: 1; cursor: default; }
+.option-correct { border-color: var(--success); background: var(--bg); }
+.option-wrong { border-color: var(--danger); background: var(--bg); }
+.grades { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2); margin-bottom: var(--space-4); }
+a.tier-live { color: var(--text); }
+a.tier-live:hover { border-color: var(--primary); }

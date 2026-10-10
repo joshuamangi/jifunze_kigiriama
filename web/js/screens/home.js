@@ -6,13 +6,13 @@ import { h, topbar } from '../ui.js';
 const MIN_ENTRIES_FOR_SESSION = 5;
 
 export default async function home() {
-  const [categories, gap] = await Promise.all([get('/api/categories'), get('/api/suggestions/gap')]);
+  const [categories, gap, today] = await Promise.all([get('/api/categories'), get('/api/suggestions/gap'), get('/api/learn/summary')]);
   const total = categories.reduce((sum, c) => sum + c.count, 0);
   // Fewest entries first, so the gap leads. Ties keep the server's list order.
   const topics = [...categories].sort((a, b) => a.count - b.count);
 
-  // Nothing records study activity yet, so the streak is a true zero for now.
-  const streak = 0;
+  const streak = today.streak_days;
+  const toStudy = today.due_today + today.new_available;
 
   return h(
     'div',
@@ -32,10 +32,14 @@ export default async function home() {
         'section',
         { class: 'card mb' },
         h('div', { class: 'row' }, h('span', { class: 'primary' }, icon('clock', 20)), h('h2', { class: 'h2 no-margin' }, "Today's 20-minute session")),
-        total < MIN_ENTRIES_FOR_SESSION
-          ? h('p', { class: 'small muted' }, `Add at least ${MIN_ENTRIES_FOR_SESSION} entries to unlock your first guided session — every review is built from words and phrases in the dictionary.`)
-          : h('p', { class: 'small muted' }, 'Daily study sessions are coming in a later update.'),
-        h('a', { class: 'btn btn-primary', href: `#/add?category=${encodeURIComponent(gap.id)}` }, icon('add', 20), total === 0 ? 'Add your first entries' : 'Add entries'),
+        total < MIN_ENTRIES_FOR_SESSION && toStudy === 0
+          ? h('p', { class: 'small muted' }, `Add at least ${MIN_ENTRIES_FOR_SESSION} entries to unlock your first guided session \u2014 every review is built from words and phrases in the dictionary.`)
+          : toStudy > 0
+            ? h('p', { class: 'small muted' }, `${toStudy} ${toStudy === 1 ? 'card' : 'cards'} to study today (${today.due_today} to review, ${today.new_available} new), about ${today.estimated_minutes} minutes.`)
+            : h('p', { class: 'small muted' }, "You're done for today. Come back tomorrow, or add more entries."),
+        toStudy > 0
+          ? h('a', { class: 'btn btn-primary', href: '#/study?tier=2' }, icon('play', 20), 'Start session')
+          : h('a', { class: 'btn btn-primary', href: `#/add?category=${encodeURIComponent(gap.id)}` }, icon('add', 20), total === 0 ? 'Add your first entries' : 'Add entries'),
       ),
       h('h2', { class: 'eyebrow' }, 'Suggested topics to start with'),
       topics.map((topic) =>

@@ -10,6 +10,7 @@ const SCREENS = {
   '/home': () => import('./screens/home.js'),
   '/add': () => import('./screens/add.js'),
   '/learn': () => import('./screens/learn.js'),
+  '/study': () => import('./screens/study.js'),
   '/culture': () => import('./screens/culture.js'),
   '/settings': () => import('./screens/settings.js'),
   '/review': () => import('./screens/review.js'),
@@ -23,7 +24,7 @@ const NAV = [
   ['/settings', 'Settings', 'settings'],
 ];
 // Review is reached from Settings, so it keeps the Settings tab highlighted.
-const NAV_PARENT = { '/review': '/settings' };
+const NAV_PARENT = { '/review': '/settings', '/study': '/learn' };
 
 const root = document.getElementById('app');
 const session = { user: null };

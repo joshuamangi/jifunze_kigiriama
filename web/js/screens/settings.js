@@ -1,7 +1,7 @@
-import { get, post } from '../api.js';
+import { get, post, put } from '../api.js';
 import { icon } from '../icons.js';
 import { currentTheme, setTheme } from '../theme.js';
-import { h, toast, topbar } from '../ui.js';
+import { banner, chipGroup, errorBanner, field, h, toast, topbar } from '../ui.js';
 
 function appearanceSwitch() {
   const buttons = {};
@@ -14,6 +14,49 @@ function appearanceSwitch() {
   }
   paint();
   return h('div', { class: 'switch' }, buttons.dark, buttons.light);
+}
+
+async function reminderCard() {
+  let current;
+  try {
+    current = await get('/api/reminders');
+  } catch (error) {
+    return h('div', { class: 'card' }, errorBanner(error));
+  }
+  const enabled = chipGroup({ label: 'Reminder', options: [['on', 'On'], ['off', 'Off']], value: current.enabled ? 'on' : 'off' });
+  const time = field({ label: 'Time', id: 'reminder-time', type: 'time', value: current.send_at });
+  const how = chipGroup({ label: 'How often', options: [['daily', 'Every day'], ['weekdays', 'Weekdays only']], value: current.frequency });
+  const email = field({ label: 'Send to', id: 'reminder-email', type: 'email', value: current.email, autocomplete: 'email', placeholder: 'you@example.com' });
+  const message = h('div', { 'aria-live': 'polite' });
+  const save = h('button', { class: 'btn btn-primary btn-block', type: 'submit' }, 'Save reminder');
+  const form = h(
+    'form',
+    { class: 'card', novalidate: true },
+    h('div', { class: 'row mb' }, h('span', { class: 'primary' }, icon('mail', 20)), h('div', { class: 'grow' }, h('div', { class: 'strong' }, 'Daily email reminder'), h('div', { class: 'small muted' }, 'A short nudge to do today\u2019s session'))),
+    h('div', { class: 'field-label' }, 'Reminder'),
+    enabled.node,
+    time.node,
+    h('div', { class: 'field-label' }, 'How often'),
+    how.node,
+    email.node,
+    message,
+    save,
+    h('p', { class: 'small muted' }, `Sent once a day at this time (${current.timezone} time) by a scheduled job on the server. An email only goes out when you have cards to study.`),
+  );
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    message.replaceChildren();
+    save.disabled = true;
+    try {
+      await put('/api/reminders', { enabled: enabled.get() === 'on', send_at: time.input.value, frequency: how.get(), email: email.input.value });
+      toast('Reminder saved.');
+    } catch (error) {
+      message.replaceChildren(error.status === 422 ? banner('warn', error.message) : errorBanner(error));
+    } finally {
+      save.disabled = false;
+    }
+  });
+  return form;
 }
 
 async function adminCard() {
@@ -57,7 +100,7 @@ export default async function settings({ user, navigate, setUser }) {
       h('h2', { class: 'eyebrow' }, 'Account'),
       h('div', { class: 'card stack' }, h('div', { class: 'row' }, h('span', { class: 'primary' }, icon('user', 20)), h('div', { class: 'grow' }, h('div', { class: 'strong' }, user.username), h('div', { class: 'small muted' }, user.role === 'admin' ? 'Admin' : 'Member'))), logout),
       h('h2', { class: 'eyebrow mt-lg' }, 'Study reminders'),
-      h('div', { class: 'card notice-off' }, h('div', { class: 'row' }, h('span', { class: 'primary' }, icon('mail', 20)), h('div', { class: 'grow' }, h('div', { class: 'strong' }, 'Daily email reminder'), h('div', { class: 'small muted' }, 'Not available yet. Reminders will be switched on in a later update.')))),
+      await reminderCard(),
       h('h2', { class: 'eyebrow mt-lg' }, 'Appearance'),
       appearanceSwitch(),
       user.role === 'admin' ? await adminCard() : null,
