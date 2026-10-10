@@ -19,6 +19,7 @@ dev = [
     "httpx",  # required by FastAPI's TestClient
     "ruff==0.16.10",  # same version as the pre-commit hook, so formatting agrees
     "pre-commit",
+    "pip-audit",  # checks installed dependencies against known-vulnerability databases (make audit)
 ]
 
 [tool.setuptools]

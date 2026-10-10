@@ -3,6 +3,7 @@
 import re
 import sqlite3
 
+from app import audit
 from app.auth.hashing import PasswordService
 from app.db import Database
 
@@ -34,6 +35,9 @@ def create_user(
                 "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
                 (username, password_hash, role),
             )
-            return cur.lastrowid
+            user_id = cur.lastrowid
     except sqlite3.IntegrityError:
         raise UserError("that username is already taken") from None
+    # Accounts are made at the command line, so there is no request or signed-in actor to name.
+    audit.record(db, "user.create", target=f"user:{user_id}", detail=f"{role} {username}")
+    return user_id

@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
-from app import entries
+from app import audit, entries
 from app.auth.deps import get_db, require_user
 from app.db import Database
 from app.entries import CategoryId, SourceType, Status
@@ -76,6 +76,15 @@ def patch_entry(
         raise HTTPException(status_code=422, detail="fields may not be null")
     entry = entries.update_entry(db, user, entry_id, patch)
     wake_worker(request, entry_id)
+    if user["role"] == "admin" and "verification_status" in patch:
+        audit.record(
+            db,
+            "entry.set_status",
+            request=request,
+            actor=user,
+            target=f"entry:{entry_id}",
+            detail=patch["verification_status"],
+        )
     return entry
 
 
@@ -90,6 +99,15 @@ def revert_entry(
 ) -> dict:
     entry = entries.revert_entry(db, user, entry_id, history_id)
     wake_worker(request, entry_id)
+    if user["role"] == "admin":
+        audit.record(
+            db,
+            "entry.revert",
+            request=request,
+            actor=user,
+            target=f"entry:{entry_id}",
+            detail=f"history:{history_id}",
+        )
     return entry
 
 

@@ -228,6 +228,7 @@ def test_there_is_no_registration_route_and_public_routes_are_known(app):
         "/api/review",
         "/api/review/{entry_id}/approve",
         "/api/review/{entry_id}/decline",
+        "/api/admin/status",
     }
 
 
