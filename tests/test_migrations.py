@@ -11,7 +11,7 @@ def _tables(conn):
 def test_applies_to_empty_database(tmp_path):
     conn = connect(tmp_path / "a.db")
     applied = apply_migrations(conn)
-    assert applied == ["0001_init.sql", "0002_entry_decline.sql"]
+    assert applied == ["0001_init.sql", "0002_entry_decline.sql", "0003_learning.sql"]
     assert {"users", "sessions", "entries", "entry_history", "user_progress"} <= _tables(conn)
     assert {"noun_classes", "verb_paradigms", "reminders", "schema_migrations"} <= _tables(conn)
     assert {"entries_fts", "entry_vec"} <= _tables(conn)
@@ -21,7 +21,7 @@ def test_second_run_is_a_no_op(tmp_path):
     conn = connect(tmp_path / "a.db")
     apply_migrations(conn)
     assert apply_migrations(conn) == []
-    assert conn.execute("SELECT count(*) FROM schema_migrations").fetchone()[0] == 2
+    assert conn.execute("SELECT count(*) FROM schema_migrations").fetchone()[0] == 3
 
 
 def test_editing_an_applied_migration_is_refused(tmp_path):

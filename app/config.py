@@ -23,6 +23,19 @@ def _choice(env: dict[str, str], name: str, default: str, allowed: set[str]) -> 
     return value
 
 
+def _timezone(name: str) -> str:
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+    name = name.strip() or "UTC"
+    try:
+        ZoneInfo(name)
+    except (ZoneInfoNotFoundError, ValueError):
+        raise ConfigError(
+            f"APP_TIMEZONE {name!r} is not a known time zone (e.g. Africa/Nairobi)"
+        ) from None
+    return name
+
+
 def _int(env: dict[str, str], name: str, default: int) -> int:
     raw = env.get(name)
     if raw is None or raw.strip() == "":
@@ -52,6 +65,9 @@ class Settings:
     embed_model: str = "fp32"  # which ONNX file: "fp32" or "qint8" (arm64-quantised, smaller)
     embed_model_dir: str = "models"
     embed_threads: int = 2  # CPU threads for the model, so a reindex cannot starve the web app
+    app_timezone: str = "UTC"  # defines "today" for due dates, the streak and reminder times
+    session_max_cards: int = 40  # about 30 seconds a card, so roughly 20 minutes
+    new_per_day: int = 8
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> "Settings":
@@ -75,6 +91,9 @@ class Settings:
             embed_model=_choice(env, "EMBED_MODEL", "fp32", {"fp32", "qint8"}),
             embed_model_dir=env.get("EMBED_MODEL_DIR", "models"),
             embed_threads=_int(env, "EMBED_THREADS", 2),
+            app_timezone=_timezone(env.get("APP_TIMEZONE", "UTC")),
+            session_max_cards=_int(env, "SESSION_MAX_CARDS", 40),
+            new_per_day=_int(env, "NEW_PER_DAY", 8),
         )
         if app_env == "prod" and settings.session_secret in {"", DEV_SESSION_SECRET}:
             raise ConfigError("SESSION_SECRET must be set to a real secret when APP_ENV=prod")
