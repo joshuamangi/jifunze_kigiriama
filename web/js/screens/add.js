@@ -60,6 +60,23 @@ export default async function add({ user, params }) {
   const filter = chipGroup({ label: 'Filter by group', options: [['all', 'All'], ...categoryOptions], value: 'all', onChange: () => loadList(true) });
   const searchInput = h('input', { class: 'input', type: 'search', placeholder: 'Search by English or Kigiriama word', 'aria-label': 'Search entries', autocomplete: 'off', spellcheck: 'false' });
   searchInput.addEventListener('input', debounce(() => loadList(true), 300));
+  const searchMode = chipGroup({
+    label: 'Search by',
+    options: [['keyword', 'Keyword'], ['semantic', 'Meaning']],
+    value: 'keyword',
+    onChange: () => {
+      paintHint();
+      if (searchInput.value.trim()) loadList(true);
+    },
+  });
+  const hint = h('p', { class: 'small muted' });
+  const paintHint = () => {
+    hint.textContent = searchMode.get() === 'semantic'
+      ? 'Describe the meaning in English. Entries with a similar meaning are found even when the words differ.'
+      : 'Finds words typed in English or Kigiriama.';
+  };
+  paintHint();
+  let indexingNote = '';
   const summary = h('p', { class: 'small muted', 'aria-live': 'polite' });
   const list = h('div');
   const more = h('button', { class: 'btn btn-block', type: 'button', hidden: true }, 'Show more');
@@ -76,7 +93,22 @@ export default async function add({ user, params }) {
       list.replaceChildren(loading());
     }
     try {
-      const data = await get(`/api/entries${query({ category: filter.get() === 'all' ? '' : filter.get(), q: searchInput.value.trim(), limit: PAGE_SIZE, offset: shown.length })}`);
+      const text = searchInput.value.trim();
+      if (searchMode.get() === 'semantic' && text) {
+        // Ranked by closest meaning; the server returns the best matches, so there is no paging.
+        const data = await get(`/api/search${query({ q: text, mode: 'semantic', limit: 20 })}`);
+        if (token !== loadToken) return;
+        const group = filter.get();
+        shown = data.items.filter((item) => group === 'all' || item.category === group);
+        total = shown.length;
+        indexingNote = data.not_yet_indexed > 0
+          ? `${data.not_yet_indexed} ${data.not_yet_indexed === 1 ? 'entry is' : 'entries are'} still being indexed and ${data.not_yet_indexed === 1 ? "isn't" : "aren't"} searched yet.`
+          : '';
+        paintList();
+        return;
+      }
+      indexingNote = '';
+      const data = await get(`/api/entries${query({ category: filter.get() === 'all' ? '' : filter.get(), q: text, limit: PAGE_SIZE, offset: shown.length })}`);
       if (token !== loadToken) return;
       shown = shown.concat(data.items);
       total = data.total;
@@ -91,9 +123,13 @@ export default async function add({ user, params }) {
 
   function paintList() {
     const filtering = filter.get() !== 'all' || searchInput.value.trim() !== '';
-    summary.textContent = filtering ? `Showing ${shown.length} of ${total} matching ${total === 1 ? 'entry' : 'entries'}.` : `${total} ${total === 1 ? 'entry' : 'entries'}.`;
+    const byMeaning = searchMode.get() === 'semantic' && searchInput.value.trim() !== '';
+    const base = byMeaning
+      ? `${total} ${total === 1 ? 'entry' : 'entries'} by closest meaning.`
+      : filtering ? `Showing ${shown.length} of ${total} matching ${total === 1 ? 'entry' : 'entries'}.` : `${total} ${total === 1 ? 'entry' : 'entries'}.`;
+    summary.textContent = indexingNote ? `${base} ${indexingNote}` : base;
     list.replaceChildren(...(shown.length ? shown.map(entryButton) : [emptyState('inbox', filtering ? 'No entries match these filters yet.' : 'No entries yet. Add the first one above.')]));
-    more.hidden = shown.length >= total;
+    more.hidden = byMeaning || shown.length >= total;
   }
 
   function statusBadge(entry) {
@@ -246,7 +282,8 @@ export default async function add({ user, params }) {
       startCategory === gap.id ? banner('info', icon('bulb', 20), gap.count === 0 ? `Today's gap: you have no ${gap.label} entries yet — the form below is set to that group, ready to go.` : `Today's gap: ${gap.label} has the fewest entries (${gap.count}) — the form below is set to that group.`) : null,
       form,
       h('div', { class: 'search' }, icon('search', 16), searchInput),
-      h('p', { class: 'small muted' }, 'Keyword search over English and Kigiriama text. Search by meaning arrives in a later update.'),
+      searchMode.node,
+      hint,
       h('div', { class: 'field-label' }, 'Filter by group'),
       filter.node,
       summary,
