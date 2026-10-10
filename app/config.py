@@ -16,6 +16,13 @@ def _bool(value: str | None, default: bool) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _choice(env: dict[str, str], name: str, default: str, allowed: set[str]) -> str:
+    value = env.get(name, "").strip().lower() or default
+    if value not in allowed:
+        raise ConfigError(f"{name} must be one of {sorted(allowed)}")
+    return value
+
+
 def _int(env: dict[str, str], name: str, default: int) -> int:
     raw = env.get(name)
     if raw is None or raw.strip() == "":
@@ -41,6 +48,10 @@ class Settings:
     argon2_time_cost: int = 2
     argon2_parallelism: int = 1
     allowed_origins: tuple[str, ...] = ()  # empty = same host as the request
+    embedder: str = "fake"  # "fake" (tests, quick local runs) or "onnx" (the real model)
+    embed_model: str = "fp32"  # which ONNX file: "fp32" or "qint8" (arm64-quantised, smaller)
+    embed_model_dir: str = "models"
+    embed_threads: int = 2  # CPU threads for the model, so a reindex cannot starve the web app
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> "Settings":
@@ -60,6 +71,10 @@ class Settings:
             argon2_time_cost=_int(env, "ARGON2_TIME_COST", 2),
             argon2_parallelism=_int(env, "ARGON2_PARALLELISM", 1),
             allowed_origins=tuple(o for o in origins if o),
+            embedder=_choice(env, "EMBEDDER", "fake", {"fake", "onnx"}),
+            embed_model=_choice(env, "EMBED_MODEL", "fp32", {"fp32", "qint8"}),
+            embed_model_dir=env.get("EMBED_MODEL_DIR", "models"),
+            embed_threads=_int(env, "EMBED_THREADS", 2),
         )
         if app_env == "prod" and settings.session_secret in {"", DEV_SESSION_SECRET}:
             raise ConfigError("SESSION_SECRET must be set to a real secret when APP_ENV=prod")

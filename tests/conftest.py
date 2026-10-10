@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings
 from app.db import Database, connect
+from app.embeddings.fake import FakeEmbedder
 from app.main import create_app
 from app.migrate import apply_migrations
 from app.users import create_user
@@ -37,7 +38,8 @@ def db(tmp_path):
 
 @pytest.fixture
 def app(settings, db):
-    return create_app(settings, db)
+    # The embedding worker is started explicitly by the tests that exercise it.
+    return create_app(settings, db, embedder=FakeEmbedder(), start_worker=False)
 
 
 @pytest.fixture

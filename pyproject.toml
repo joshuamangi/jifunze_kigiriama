@@ -7,6 +7,9 @@ dependencies = [
     "fastapi",  # web framework
     "uvicorn",  # ASGI server; plain build, no [standard] extras, to keep the Pi footprint small
     "argon2-cffi",  # argon2id password hashing; ships aarch64 wheels
+    "onnxruntime",  # runs the MiniLM embedding model on the CPU; aarch64 wheel, no compiling on the Pi
+    "tokenizers",  # turns text into the token ids the model expects; aarch64 wheel
+    "numpy",  # array maths for pooling; onnxruntime needs it anyway
     "sqlite-vec",  # vec0 vector tables for semantic search; ships aarch64 wheels
 ]
 
@@ -38,3 +41,5 @@ select = ["E", "F", "I", "UP", "B", "S"]
 # SQL here is assembled only from code constants (VISIBLE, NOW) and a column whitelist
 # (PATCHABLE); all user values are bound parameters.
 "app/entries.py" = ["S608"]
+"app/embeddings/worker.py" = ["S608"]  # NOW is a constant SQL expression, no user text
+"app/search.py" = ["S608"]  # VISIBLE and placeholder lists are built from constants

@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
 from app import entries
@@ -15,6 +15,13 @@ router = APIRouter()
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
 CurrentUser = Annotated[dict, Depends(require_user)]
 Db = Annotated[Database, Depends(get_db)]
+
+
+def wake_worker(request: Request, entry_id: int) -> None:
+    """Tell the embedding worker an entry may need a vector. Never blocks the request."""
+    worker = request.app.state.worker
+    if worker is not None:
+        worker.notify(entry_id)
 
 
 class EntryIn(BaseModel):
@@ -37,8 +44,10 @@ class EntryPatch(BaseModel):
 
 
 @router.post("/api/entries", status_code=201)
-def create_entry(body: EntryIn, user: CurrentUser, db: Db) -> dict:
-    return entries.create_entry(db, user, body.model_dump())
+def create_entry(body: EntryIn, user: CurrentUser, db: Db, request: Request) -> dict:
+    entry = entries.create_entry(db, user, body.model_dump())
+    wake_worker(request, entry["id"])
+    return entry
 
 
 @router.get("/api/entries")
@@ -59,11 +68,15 @@ def get_entry(entry_id: int, user: CurrentUser, db: Db) -> dict:
 
 
 @router.patch("/api/entries/{entry_id}")
-def patch_entry(entry_id: int, body: EntryPatch, user: CurrentUser, db: Db) -> dict:
+def patch_entry(
+    entry_id: int, body: EntryPatch, user: CurrentUser, db: Db, request: Request
+) -> dict:
     patch = body.model_dump(exclude_unset=True)
     if any(value is None for value in patch.values()):
         raise HTTPException(status_code=422, detail="fields may not be null")
-    return entries.update_entry(db, user, entry_id, patch)
+    entry = entries.update_entry(db, user, entry_id, patch)
+    wake_worker(request, entry_id)
+    return entry
 
 
 @router.get("/api/entries/{entry_id}/history")
@@ -72,8 +85,12 @@ def get_history(entry_id: int, user: CurrentUser, db: Db) -> list[dict]:
 
 
 @router.post("/api/entries/{entry_id}/history/{history_id}/revert")
-def revert_entry(entry_id: int, history_id: int, user: CurrentUser, db: Db) -> dict:
-    return entries.revert_entry(db, user, entry_id, history_id)
+def revert_entry(
+    entry_id: int, history_id: int, user: CurrentUser, db: Db, request: Request
+) -> dict:
+    entry = entries.revert_entry(db, user, entry_id, history_id)
+    wake_worker(request, entry_id)
+    return entry
 
 
 @router.get("/api/categories")
