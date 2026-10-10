@@ -70,6 +70,7 @@ async function adminCard() {
     null,
     h('h2', { class: 'eyebrow mt-lg' }, 'Admin'),
     h('a', { class: 'card link-card', href: '#/review' }, h('span', { class: 'primary' }, icon('shield', 20)), h('span', { class: 'grow' }, h('div', { class: 'strong' }, 'Review queue'), h('div', { class: 'small muted' }, detail)), h('span', { class: 'muted' }, icon('chevron', 16))),
+    h('a', { class: 'card link-card', href: '#/status' }, h('span', { class: 'primary' }, icon('entries', 20)), h('span', { class: 'grow' }, h('div', { class: 'strong' }, 'System status'), h('div', { class: 'small muted' }, 'Database size, search index, backups, failed logins')), h('span', { class: 'muted' }, icon('chevron', 16))),
   );
 }
 
