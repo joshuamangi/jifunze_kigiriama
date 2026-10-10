@@ -18,7 +18,7 @@ Use **Kigiriama** (language) and **Giriama** (people/adjective), never "Kigiryam
 - Python 3.11+, FastAPI + Uvicorn (one worker). Dev: `127.0.0.1:8000`. Production: Uvicorn on a Unix socket behind Nginx on `127.0.0.1:8080`.
 - Staged build guide: `docs/IMPLEMENTATION.md` (supersedes `docs/BUILD_PLAN.md`). If it and this file disagree, stop and ask.
 - SQLite + `sqlite-vec` for vector search.
-- Embeddings: small GGUF model (~90MB, MiniLM-class) run locally. **Embed the English side only**; embedding models don't know Kigiriama.
+- Embeddings: all-MiniLM-L6-v2 (384 dims, ~90MB fp32 or ~23MB arm64-quantised) as ONNX, run locally with ONNX Runtime (no compiling on the Pi; llama-cpp-python has no aarch64 wheel). `make download-model` fetches it, checksum-verified. **Embed the English side only**; embedding models don't know Kigiriama. `EMBEDDER=fake` is the default for dev and CI.
 - Frontend: plain HTML/CSS/JS (or Svelte) PWA: manifest, service worker, installable. Mobile-first at 390px wide.
 - Remote access: `cloudflared` named tunnel -> Nginx `http://127.0.0.1:8080` -> Unix socket -> Uvicorn. systemd services for app and tunnel; Ansible for the machine; secrets with `sops` + `age`; deploys via GitHub Actions to a self-hosted runner on the Pi.
 - Email reminders: a scheduled job (systemd timer or cron) on the Pi.

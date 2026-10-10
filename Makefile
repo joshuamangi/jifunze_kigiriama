@@ -4,7 +4,7 @@ BIN := $(VENV)/bin
 ENV_FILE ?= .env
 ENV_PATH := $(abspath $(ENV_FILE))
 
-.PHONY: install run test lint audit-secrets migrate seed create-user bench-argon2 reindex
+.PHONY: install run test lint audit-secrets migrate seed create-user bench-argon2 download-model bench-embed reindex
 
 install:
 	$(PYTHON) -m venv $(VENV)
@@ -41,5 +41,11 @@ create-user:
 bench-argon2:
 	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; $(BIN)/python scripts/bench_argon2.py
 
+download-model:
+	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; $(BIN)/python scripts/download_model.py
+
+bench-embed:
+	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; $(BIN)/python scripts/bench_embed.py $(ARGS)
+
 reindex:
-	@echo "make reindex arrives in Stage 5" && exit 1
+	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; $(BIN)/python scripts/reindex.py
