@@ -36,7 +36,9 @@ jobs:
       - name: Install (same layout as `make install`)
         run: |
           python -m venv .venv
-          .venv/bin/pip install --upgrade pip
+          # setuptools is only a build tool here, but the runner's Python seeds an old copy that
+          # pip-audit flags (PYSEC-2026-3447, fixed in 83.0.0).
+          .venv/bin/pip install --upgrade pip "setuptools>=83.0.0"
           .venv/bin/pip install -e ".[dev]"
       - name: The hash-pinned lock file the Pi installs from still installs
         run: |
