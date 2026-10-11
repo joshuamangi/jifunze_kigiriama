@@ -7,7 +7,7 @@ ENV_PATH := $(abspath $(ENV_FILE))
 # timeout: slow-client timeouts belong to Nginx (client_header_timeout, client_body_timeout).
 UVICORN_LIMITS := --limit-concurrency 64 --timeout-keep-alive 5 --timeout-graceful-shutdown 10 --no-server-header --no-access-log
 
-.PHONY: install run test lint lock check-nginx audit audit-deps audit-secrets migrate seed create-user bench-argon2 download-model bench-embed reindex send-reminders import-grammar
+.PHONY: install run test lint lock check-nginx check-web-size audit audit-deps audit-secrets migrate seed create-user bench-argon2 download-model bench-embed reindex send-reminders import-grammar
 
 install:
 	$(PYTHON) -m venv $(VENV)
@@ -41,6 +41,10 @@ check-nginx:
 	  -v $(CURDIR)/deploy/nginx/jifunze-proxy.conf:/etc/nginx/snippets/jifunze-proxy.conf:ro \
 	  -v $(CURDIR)/deploy/nginx/jifunze-security-headers.conf:/etc/nginx/snippets/jifunze-security-headers.conf:ro \
 	  nginx:stable nginx -t
+
+# Front-end size budget (web/ is served as-is, so this is what a phone downloads).
+check-web-size:
+	$(BIN)/python scripts/check_web_size.py
 
 # Dependency vulnerabilities (needs network) and committed secrets, together.
 audit: audit-deps audit-secrets
