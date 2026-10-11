@@ -1,0 +1,58 @@
+# Deploy one release to the Raspberry Pi. Starts when a draft release is published by a person,
+# or by hand (Actions -> Deploy -> Run workflow, with the tag). The job then waits for the
+# required reviewers of the `production` environment before anything runs on the Pi.
+#
+# Nothing here uses a third-party action or checks out code on the Pi: the deploy scripts are
+# taken from the checksummed tarball being deployed. Never add a pull_request trigger to this file.
+name: Deploy
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to deploy, e.g. v0.1.0"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false # a running deploy is never cancelled half way; the next one waits
+
+jobs:
+  deploy:
+    # Belt and braces: a fork's copy of this workflow can never match.
+    if: github.repository == 'joshuamangi/jifunze_kigiriama'
+    runs-on: [self-hosted, linux, ARM64]
+    environment: production
+    timeout-minutes: 20
+    env:
+      TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      INCOMING: /srv/jifunze/incoming
+    steps:
+      - name: Check the tag
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "bad tag: $TAG" >&2; exit 1; }
+      - name: Download the release assets
+        run: |
+          set -euo pipefail
+          rm -f "$INCOMING/jifunze-$TAG.tar.gz" "$INCOMING/jifunze-$TAG.tar.gz.sha256"
+          gh release download "$TAG" --repo "$REPO" --dir "$INCOMING" \
+            --pattern "jifunze-$TAG.tar.gz" --pattern "jifunze-$TAG.tar.gz.sha256"
+      - name: Verify the checksum
+        run: |
+          cd "$INCOMING"
+          sha256sum --check "jifunze-$TAG.tar.gz.sha256"
+      - name: Deploy (backup, migrate, switch, restart, health check, roll back on failure)
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          tar -xzf "$INCOMING/jifunze-$TAG.tar.gz" -C "$work" deploy
+          "$work/deploy/deploy.sh" "$TAG"

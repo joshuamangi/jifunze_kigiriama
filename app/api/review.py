@@ -2,9 +2,9 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
-from app import entries
+from app import audit, entries
 from app.auth.deps import get_db, require_admin
 from app.db import Database
 
@@ -20,10 +20,14 @@ def review_queue(admin: Admin, db: Db) -> dict:
 
 
 @router.post("/api/review/{entry_id}/approve")
-def approve(entry_id: int, admin: Admin, db: Db) -> dict:
-    return entries.approve_entry(db, admin, entry_id)
+def approve(entry_id: int, admin: Admin, db: Db, request: Request) -> dict:
+    result = entries.approve_entry(db, admin, entry_id)
+    audit.record(db, "entry.approve", request=request, actor=admin, target=f"entry:{entry_id}")
+    return result
 
 
 @router.post("/api/review/{entry_id}/decline")
-def decline(entry_id: int, admin: Admin, db: Db) -> dict:
-    return entries.decline_entry(db, admin, entry_id)
+def decline(entry_id: int, admin: Admin, db: Db, request: Request) -> dict:
+    result = entries.decline_entry(db, admin, entry_id)
+    audit.record(db, "entry.decline", request=request, actor=admin, target=f"entry:{entry_id}")
+    return result

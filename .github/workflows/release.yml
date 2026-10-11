@@ -1,0 +1,47 @@
+# A tag like v0.1.0 runs the full CI, builds one tarball and attaches it, with its checksum, to a
+# DRAFT release. Publishing the draft (a human click) is what starts deploy.yml, which then waits
+# for the production environment's approval. (A release published by GITHUB_TOKEN would not start
+# another workflow, so the draft step is also what makes the hand-off work.)
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    needs: ci
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write # create the draft release and upload its assets; this job only
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check the tag
+        run: |
+          # Same shape deploy.sh accepts for a directory name, and a plain version number.
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "tag must look like v1.2.3: $TAG" >&2; exit 1; }
+      - name: Build the tarball (git archive, so tracked files only; no .env or database)
+        run: |
+          mkdir dist
+          git archive --format=tar.gz -o "dist/jifunze-$TAG.tar.gz" HEAD \
+            app web migrations scripts deploy pyproject.toml requirements.lock
+          (cd dist && sha256sum "jifunze-$TAG.tar.gz" > "jifunze-$TAG.tar.gz.sha256")
+          cat "dist/jifunze-$TAG.tar.gz.sha256"
+          tar -tzf "dist/jifunze-$TAG.tar.gz" | head -n 20
+      - name: Create the draft release
+        run: |
+          gh release create "$TAG" --draft --verify-tag --title "$TAG" \
+            --notes "Publish this release to start the deploy (it then waits for approval)." \
+            "dist/jifunze-$TAG.tar.gz" "dist/jifunze-$TAG.tar.gz.sha256"

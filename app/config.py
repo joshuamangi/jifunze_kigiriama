@@ -49,6 +49,13 @@ def _int(env: dict[str, str], name: str, default: int) -> int:
     return value
 
 
+def _threads(env: dict[str, str]) -> int:
+    value = _int(env, "THREADPOOL_SIZE", 12)
+    if not 8 <= value <= 16:
+        raise ConfigError("THREADPOOL_SIZE must be between 8 and 16")
+    return value
+
+
 @dataclass(frozen=True)
 class Settings:
     app_env: str
@@ -68,6 +75,10 @@ class Settings:
     app_timezone: str = "UTC"  # defines "today" for due dates, the streak and reminder times
     session_max_cards: int = 40  # about 30 seconds a card, so roughly 20 minutes
     new_per_day: int = 8
+    max_body_bytes: int = 64 * 1024  # largest request body accepted; real payloads are < 4 KiB
+    threadpool_size: int = 12  # sync route handlers run in this many threads (8 to 16 on a Pi)
+    slow_query_ms: int = 100  # database work slower than this is logged as a warning
+    backup_stamp_path: str = "data/last_backup"  # touched by the backup job; mtime = last backup
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> "Settings":
@@ -94,6 +105,10 @@ class Settings:
             app_timezone=_timezone(env.get("APP_TIMEZONE", "UTC")),
             session_max_cards=_int(env, "SESSION_MAX_CARDS", 40),
             new_per_day=_int(env, "NEW_PER_DAY", 8),
+            max_body_bytes=_int(env, "MAX_BODY_BYTES", 64 * 1024),
+            threadpool_size=_threads(env),
+            slow_query_ms=_int(env, "SLOW_QUERY_MS", 100),
+            backup_stamp_path=env.get("BACKUP_STAMP_PATH", "data/last_backup"),
         )
         if app_env == "prod" and settings.session_secret in {"", DEV_SESSION_SECRET}:
             raise ConfigError("SESSION_SECRET must be set to a real secret when APP_ENV=prod")

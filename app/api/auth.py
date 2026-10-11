@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
+from app import audit
 from app.auth.deps import get_db, get_settings, require_user
 from app.auth.sessions import COOKIE_NAME, create_session, delete_session
 from app.config import Settings
@@ -39,6 +40,7 @@ def login(
 
     wait = throttle.retry_after(body.username, address)
     if wait:
+        audit.record(db, "login.throttled", request=request, actor_name=body.username)
         raise HTTPException(
             status_code=429, detail="too many attempts", headers={"Retry-After": str(wait)}
         )
@@ -54,6 +56,7 @@ def login(
         ok = passwords.verify(user["password_hash"], body.password)
     if not ok:
         throttle.record_failure(body.username, address)
+        audit.record(db, "login.failure", request=request, actor_name=body.username)
         raise HTTPException(status_code=401, detail=INVALID_LOGIN)
 
     throttle.record_success(body.username)
@@ -64,6 +67,7 @@ def login(
                 (passwords.hash(body.password), user["id"]),
             )
         token = create_session(conn, settings, user["id"])
+    audit.record(db, "login.success", request=request, actor=user)
     response.set_cookie(
         COOKIE_NAME, token, max_age=settings.session_max_age_seconds, **_cookie_args(settings)
     )
@@ -79,6 +83,7 @@ def logout(
 ) -> Response:
     with db.write() as conn:
         delete_session(conn, request.cookies[COOKIE_NAME])
+    audit.record(db, "logout", request=request, actor=user)
     response = Response(status_code=204)
     response.delete_cookie(COOKIE_NAME, **_cookie_args(settings))
     return response

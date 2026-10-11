@@ -1,8 +1,10 @@
 """SQLite connections: pragmas, sqlite-vec, a small read pool and a single guarded writer."""
 
+import logging
 import queue
 import sqlite3
 import threading
+import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -10,6 +12,7 @@ from pathlib import Path
 import sqlite_vec
 
 DEFAULT_READERS = 4
+log = logging.getLogger("jifunze.db")
 
 
 def connect(path: str | Path, *, read_only: bool = False) -> sqlite3.Connection:
@@ -38,8 +41,11 @@ class Database:
     alongside the writer). Writers queue on the lock instead of failing with 'database is locked'.
     """
 
-    def __init__(self, path: str | Path, readers: int = DEFAULT_READERS) -> None:
+    def __init__(
+        self, path: str | Path, readers: int = DEFAULT_READERS, slow_ms: int = 100
+    ) -> None:
         self.path = path
+        self.slow_ms = slow_ms
         self._write_lock = threading.Lock()
         self._writer = connect(path)
         self._readers: queue.Queue[sqlite3.Connection] = queue.Queue()
@@ -49,15 +55,18 @@ class Database:
     @contextmanager
     def read(self) -> Iterator[sqlite3.Connection]:
         conn = self._readers.get()
+        started = time.perf_counter()
         try:
             yield conn
         finally:
             self._readers.put(conn)
+            self._note_slow("read", started)
 
     @contextmanager
     def write(self) -> Iterator[sqlite3.Connection]:
         """Short write transaction: BEGIN IMMEDIATE, commit on success, roll back on error."""
         with self._write_lock:
+            started = time.perf_counter()  # time spent holding the write lock, not waiting for it
             self._writer.execute("BEGIN IMMEDIATE")
             try:
                 yield self._writer
@@ -66,6 +75,19 @@ class Database:
                 raise
             else:
                 self._writer.execute("COMMIT")
+            finally:
+                self._note_slow("write", started)
+
+    def _note_slow(self, kind: str, started: float) -> None:
+        """Log database work that took longer than slow_ms. The unit is one read/write block
+        (everything a handler did while holding the connection), not a single statement."""
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        if elapsed_ms > self.slow_ms:
+            log.warning(
+                "slow database %s",
+                kind,
+                extra={"fields": {"kind": kind, "duration_ms": round(elapsed_ms, 1)}},
+            )
 
     def close(self) -> None:
         with self._write_lock:

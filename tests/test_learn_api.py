@@ -300,7 +300,7 @@ def test_migration_0003_keeps_existing_data(tmp_path):
         "INSERT INTO user_progress (user_id, entry_id, due_date) VALUES (1, 1, '2026-10-10')"
     )
     conn.execute("INSERT INTO reminders (user_id) VALUES (1)")
-    assert apply_migrations(conn) == ["0003_learning.sql"]
+    assert apply_migrations(conn) == ["0003_learning.sql", "0004_audit.sql"]
     row = conn.execute("SELECT repetitions, interval, ease_factor FROM user_progress").fetchone()
     assert (row["repetitions"], row["interval"], row["ease_factor"]) == (0, 0, 2.5)
     assert conn.execute("SELECT frequency FROM reminders").fetchone()[0] == "daily"
