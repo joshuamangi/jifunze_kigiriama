@@ -167,8 +167,13 @@ def test_nginx_syntax_if_nginx_is_available(tmp_path):
     main = tmp_path / "nginx.conf"
     # Everything nginx would write (pid, logs, temp dirs) goes under tmp_path, so this also runs
     # as an unprivileged user (CI). mime.types is not needed to check the syntax.
+    temp_paths = " ".join(
+        f"{kind}_temp_path {tmp_path}/{kind};"
+        for kind in ("client_body", "proxy", "fastcgi", "uwsgi", "scgi")
+    )
     main.write_text(
-        f"pid {tmp_path}/n.pid; error_log {tmp_path}/e.log; events {{}} http {{ {conf} }}"
+        f"pid {tmp_path}/n.pid; error_log {tmp_path}/e.log; events {{}} "
+        f"http {{ access_log {tmp_path}/a.log; {temp_paths} {conf} }}"
     )
     result = subprocess.run(  # noqa: S603
         [binary, "-t", "-p", str(tmp_path), "-e", str(tmp_path / "e.log"), "-c", str(main)],
