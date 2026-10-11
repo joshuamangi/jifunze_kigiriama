@@ -287,6 +287,29 @@ def test_backup_refuses_a_missing_database_and_dry_run_writes_nothing(box):
     assert sh(box, "backup.sh").returncode != 0
 
 
+def fake_mountpoint(box, mounted):
+    stubs = box["tmp"] / "stubs"
+    path = stubs / "mountpoint"
+    path.write_text(f"#!/bin/sh\nexit {0 if mounted else 1}\n")
+    path.chmod(0o755)
+    box["env"]["PATH"] = f"{stubs}:{os.environ['PATH']}"
+    box["env"]["BACKUP_REQUIRE_MOUNT"] = "1"
+
+
+def test_backup_refuses_when_the_backup_disk_is_not_mounted(box):
+    fake_mountpoint(box, mounted=False)
+    result = sh(box, "backup.sh")
+    assert result.returncode != 0
+    assert "not a mounted disk" in result.stdout + result.stderr
+    assert not list((box["base"] / "backups").glob("app-*.db"))
+
+
+def test_backup_runs_when_the_backup_disk_is_mounted(box):
+    fake_mountpoint(box, mounted=True)
+    assert sh(box, "backup.sh").returncode == 0
+    assert len(list((box["base"] / "backups").glob("app-*.db"))) == 1
+
+
 # ---- healthcheck.sh ---------------------------------------------------------------------------
 def test_healthcheck_passes_and_fails_on_the_answer(box):
     health = Path(box["env"]["JIFUNZE_HEALTH_URL"].removeprefix("file://"))

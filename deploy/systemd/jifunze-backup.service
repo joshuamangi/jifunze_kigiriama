@@ -1,7 +1,8 @@
 # Nightly database backup (deploy/backup.sh): checked copy, pruned, optional off-device copy.
 [Unit]
-# Never start without the SSD: a missing mount would otherwise create an empty database on the SD card.
-RequiresMountsFor=/srv/jifunze
+# Never start before /srv/jifunze is available. (Here it is on the SD card; if it is ever moved to
+# an SSD partition this stops the app creating an empty database on the wrong disk.)
+RequiresMountsFor=/srv/jifunze /srv/jifunze/backups
 Description=Jifunze Kigiriama database backup
 OnFailure=jifunze-failure@%n.service
 

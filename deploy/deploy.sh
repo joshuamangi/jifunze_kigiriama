@@ -19,6 +19,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 . "$HERE/lib.sh"
 
+load_env # JIFUNZE_PYTHON may be set in the env file (the Pi uses a standalone Python 3.11)
 PYTHON="${JIFUNZE_PYTHON:-python3}"
 tarball=""
 tag=""

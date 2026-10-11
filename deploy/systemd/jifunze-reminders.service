@@ -1,6 +1,7 @@
 # Sends the study reminders that are due. Run by jifunze-reminders.timer, never by the web app.
 [Unit]
-# Never start without the SSD: a missing mount would otherwise create an empty database on the SD card.
+# Never start before /srv/jifunze is available. (Here it is on the SD card; if it is ever moved to
+# an SSD partition this stops the app creating an empty database on the wrong disk.)
 RequiresMountsFor=/srv/jifunze
 Description=Jifunze Kigiriama study reminders
 After=network-online.target

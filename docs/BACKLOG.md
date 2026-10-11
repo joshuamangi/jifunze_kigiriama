@@ -23,17 +23,28 @@ change the stages there.
       GitHub runner gets its own user (it would then need group access to `data/` and the env file).
 - [x] `make check-nginx` passed on the Mac (nginx:stable, 2026-10-10). Still run `sudo nginx -t` on the Pi.
 
-## On the Raspberry Pi (needs the hardware, cannot be done on the Mac)
-- [ ] `make bench-argon2`: tune `ARGON2_MEMORY_KIB` / `ARGON2_TIME_COST` so a login takes a
-      sensible time on the Pi 4.
-- [ ] `make download-model`, then `make bench-embed` for fp32 vs qint8; choose `EMBED_MODEL`.
-- [ ] Set `EMBEDDER=onnx`, run `make reindex`, and check memory use with the app running.
-- [ ] Check `THREADPOOL_SIZE` (8 to 16) and `--limit-concurrency` under a little real load.
-- [ ] Confirm the slow-database log lines (over 100 ms) are rare on the SSD; if not, find the query.
-- [ ] Confirm `make audit` (needs network) runs on the Pi or in CI.
+## The Pi: decisions and follow-ups
+- [x] Option A chosen 2026-10-11: database on the SD card, backups on the exFAT SSD, Python 3.11
+      from `/opt/python` (uv). CLAUDE.md still says "data on a USB SSD, not microSD" and "Pi 4
+      (4GB)"; this Pi has 2 GB and no ext4 SSD yet. Ask before editing CLAUDE.md.
+- [ ] Work through `docs/PI_SETUP.md` from step 1. Step 10 (install every dependency with the lock
+      file on this Pi) is the likeliest place for a surprise.
+- [ ] Later (option B): move the SSD to an ext4 partition for `/srv/jifunze` plus a data partition
+      (optionally LUKS) and a reserve, then move `DATABASE_PATH` off the SD card. Needs enough
+      temporary space to copy the existing files off first.
+- [ ] Off-device copy of backups (`BACKUP_COPY_COMMAND`) to another machine.
+- [ ] Simple observability for the Pi once Stage 10 is finished: `node_exporter` (or a small push
+      script), CPU/load, memory, temperature and throttling (`vcgencmd`), disk, and an alert.
+      Keep it small: this Pi has 2 GB.
+- [ ] Hardware: check heatsink/fan and a 5V/3A supply.
 
 ## Stage 9: GitHub Actions
-- [ ] CI runs `make lint`, `make test`, and `make audit-deps` (pip-audit) plus the secret scan.
+- [x] CI runs `make lint`, `make test`, `make audit-deps` (pip-audit), the secret scan and the front-end size budget (`.github/workflows/ci.yml`, written 2026-10-11, not yet run on GitHub).
+- [x] Stage 9 decision taken: the runner gets its own `ghrunner` user in group `jifunze` (docs/RUNNER_SETUP.md).
+- [ ] Push, open a test PR and confirm CI is green; then work through docs/RUNNER_SETUP.md on the Pi.
+- [ ] GitHub settings (see the Stage 9 report): `production` environment with required reviewers, fork PR approval, default workflow token read-only, runner restricted to this repo.
+- [ ] No ARM64 CI job: the repo is private, and GitHub's free ARM64 hosted runners are for public repos. The Pi deploy is the first ARM64 run.
+- [ ] Checksum in the release only guards against corruption. Add artifact attestation if you want tamper-evidence.
 
 ## Stage 10: Cloudflare Tunnel and Access
 - [ ] Cloudflare Access email allow-list in front of the hostname; set `ALLOWED_ORIGINS` to it.

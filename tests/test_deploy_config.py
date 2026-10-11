@@ -50,7 +50,18 @@ def test_every_service_is_sandboxed_and_runs_as_the_service_user(path):
     "path", [p for p in SERVICES if "failure" not in p.name], ids=lambda p: p.name
 )
 def test_units_that_touch_data_wait_for_the_ssd_mount(path):
-    assert unit(path)["Unit"]["RequiresMountsFor"] == "/srv/jifunze"
+    assert "/srv/jifunze" in unit(path)["Unit"]["RequiresMountsFor"].split()
+
+
+def test_backup_unit_also_waits_for_the_backup_disk_mount():
+    wanted = unit(SYSTEMD / "jifunze-backup.service")["Unit"]["RequiresMountsFor"].split()
+    assert "/srv/jifunze/backups" in wanted
+
+
+def test_app_memory_ceiling_fits_a_2gb_pi():
+    service = unit(SYSTEMD / "jifunze.service")["Service"]
+    assert service["MemoryMax"] == "600M"
+    assert service["MemoryHigh"] == "450M"
 
 
 @pytest.mark.parametrize("path", SERVICES, ids=lambda p: p.name)
@@ -248,3 +259,5 @@ def test_pi_env_template_is_plain_key_value_and_loads_as_prod_settings():
     assert settings.database_path == "/srv/jifunze/data/app.db"
     assert settings.backup_stamp_path == "/srv/jifunze/data/last_backup"
     assert pairs["EMBEDDER"] == "fake"  # the onnx model is switched on only after benchmarking
+    assert pairs["EMBED_MODEL"] == "qint8"  # the small model, for a 2 GB Pi
+    assert pairs["BACKUP_REQUIRE_MOUNT"] == "1"
