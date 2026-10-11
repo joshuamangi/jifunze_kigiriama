@@ -40,6 +40,15 @@ fi
 
 name="app-$(date -u +%Y%m%dT%H%M%SZ).db"
 final="$BACKUP_DIR/$name"
+# Names have one-second resolution. Two backups in the same second (a deploy right after the
+# nightly run, or two quick deploys) must not overwrite each other: wait for the next second.
+if [ "$DRY_RUN" = 0 ]; then
+  while [ -e "$final" ]; do
+    sleep 1
+    name="app-$(date -u +%Y%m%dT%H%M%SZ).db"
+    final="$BACKUP_DIR/$name"
+  done
+fi
 partial="$BACKUP_DIR/.$name.partial"
 
 step "backup $DB -> $final"

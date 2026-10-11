@@ -250,6 +250,14 @@ def test_backup_is_a_restorable_checked_copy_and_touches_the_stamp(box):
     assert not list((box["base"] / "backups").glob(".*partial"))
 
 
+def test_two_backups_in_the_same_second_do_not_overwrite_each_other(box):
+    # Regression: names have one-second resolution, so a second backup right after the first
+    # (a deploy just after the nightly run) used to replace it. CI on a fast runner hit this.
+    assert sh(box, "backup.sh").returncode == 0
+    assert sh(box, "backup.sh").returncode == 0
+    assert len(list((box["base"] / "backups").glob("app-*.db"))) == 2
+
+
 def test_backup_prunes_to_the_newest_n(box):
     box["env"]["BACKUP_KEEP"] = "2"
     backups = box["base"] / "backups"

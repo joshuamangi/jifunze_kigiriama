@@ -165,11 +165,16 @@ def test_nginx_syntax_if_nginx_is_available(tmp_path):
         shutil.copy(NGINX / name, snippets / name)
     conf = (NGINX / "jifunze.conf").read_text().replace("/etc/nginx/snippets", str(snippets))
     main = tmp_path / "nginx.conf"
+    # Everything nginx would write (pid, logs, temp dirs) goes under tmp_path, so this also runs
+    # as an unprivileged user (CI). mime.types is not needed to check the syntax.
     main.write_text(
-        f"pid {tmp_path}/n.pid; events {{}} http {{ include {binary}/../mime.types;"
-        f" error_log {tmp_path}/e.log; {conf} }}"
+        f"pid {tmp_path}/n.pid; error_log {tmp_path}/e.log; events {{}} http {{ {conf} }}"
     )
-    result = subprocess.run([binary, "-t", "-c", str(main)], capture_output=True, text=True)  # noqa: S603
+    result = subprocess.run(  # noqa: S603
+        [binary, "-t", "-p", str(tmp_path), "-e", str(tmp_path / "e.log"), "-c", str(main)],
+        capture_output=True,
+        text=True,
+    )
     assert result.returncode == 0, result.stderr
 
 
