@@ -326,3 +326,19 @@ def test_healthcheck_passes_and_fails_on_the_answer(box):
     assert sh(box, "healthcheck.sh").returncode != 0
     health.unlink()
     assert sh(box, "healthcheck.sh").returncode != 0
+
+
+def test_healthcheck_ignores_a_vcgencmd_that_cannot_read_the_hardware(box):
+    # Regression (first real deploy on the Pi): the deploy user cannot open /dev/vcio, so
+    # vcgencmd prints an error line instead of a value. That used to crash the arithmetic and
+    # fail a healthy deploy. The hardware lines are advice; they must never fail the check.
+    fake = box["tmp"] / "fakebin"
+    fake.mkdir()
+    tool = fake / "vcgencmd"
+    tool.write_text('#!/bin/sh\necho "Can\'t open device file: /dev/vcio_gencmd"\n')
+    tool.chmod(0o755)
+    box["env"]["PATH"] = f"{fake}:{box['env']['PATH']}"
+    result = sh(box, "healthcheck.sh")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "app: ok" in result.stdout
+    assert "power: unknown" in result.stdout

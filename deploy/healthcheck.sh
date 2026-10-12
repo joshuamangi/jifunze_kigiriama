@@ -42,7 +42,12 @@ log "app: ok"
 # Hardware, only where the Raspberry Pi tool exists.
 if command -v vcgencmd >/dev/null 2>&1; then
   throttled="$(vcgencmd get_throttled 2>/dev/null | cut -d= -f2 || true)"
-  if [ -n "$throttled" ] && [ "$((throttled))" -ne 0 ]; then
+  # vcgencmd prints an error line instead of a value when the user cannot open /dev/vcio (the
+  # deploy user cannot). Anything that is not a hex number is "unknown", never a failure.
+  [[ "$throttled" =~ ^0x[0-9a-fA-F]+$ ]] || throttled=""
+  if [ -z "$throttled" ]; then
+    log "power: unknown (vcgencmd gave no reading; run this script as your own user to see it)"
+  elif [ "$((throttled))" -ne 0 ]; then
     flags=$((throttled))
     [ $((flags & 0x1)) -ne 0 ] && log "WARN: under-voltage right now (check the power supply)"
     [ $((flags & 0x2)) -ne 0 ] && log "WARN: ARM frequency capped right now"
@@ -51,10 +56,10 @@ if command -v vcgencmd >/dev/null 2>&1; then
     [ $((flags & 0x10000)) -ne 0 ] && log "WARN: under-voltage has occurred since boot"
     [ $((flags & 0x40000)) -ne 0 ] && log "WARN: throttling has occurred since boot"
   else
-    log "power: ok (get_throttled=${throttled:-unknown})"
+    log "power: ok (get_throttled=$throttled)"
   fi
   temp="$(vcgencmd measure_temp 2>/dev/null | sed -e "s/temp=//" -e "s/'C//" || true)"
-  if [ -n "$temp" ]; then
+  if [[ "$temp" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
     log "temperature: ${temp} C"
     if awk -v t="$temp" 'BEGIN { exit !(t >= 80) }'; then
       log "WARN: temperature is 80 C or more; the CPU will throttle"
