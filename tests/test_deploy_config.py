@@ -315,13 +315,7 @@ def test_cloudflared_unit_is_sandboxed_and_not_the_app_user():
     assert "--config /etc/cloudflared/config.yml" in service["ExecStart"]
     assert parsed["Unit"]["OnFailure"] == "jifunze-failure@%n.service"
     # It never needs the app's files.
-    assert (
-        "/srv/jifunze"
-        not in (CLOUDFLARED / "cloudflared.service")
-        .read_text()
-        .split("[Unit]")[1]
-        .split("[Service]")[1]
-    )
+    assert "/srv/jifunze" not in (CLOUDFLARED / "cloudflared.service").read_text()
 
 
 def test_cloudflared_target_matches_the_nginx_listener():
