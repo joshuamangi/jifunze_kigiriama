@@ -1,0 +1,11 @@
+# cloudflared tunnel config. Ansible renders this to /etc/cloudflared/config.yml.
+# Variables: cloudflared_tunnel_id (UUID from `cloudflared tunnel create`) and jifunze_hostname.
+# See docs/CLOUDFLARE_SETUP.md.
+tunnel: {{ cloudflared_tunnel_id }}
+credentials-file: /etc/cloudflared/{{ cloudflared_tunnel_id }}.json
+
+ingress:
+  - hostname: {{ jifunze_hostname }}
+    service: http://127.0.0.1:8080
+  # Anything else that reaches the tunnel gets a 404. This last rule is required by cloudflared.
+  - service: http_status:404

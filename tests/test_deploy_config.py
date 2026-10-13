@@ -271,3 +271,58 @@ def test_pi_env_template_is_plain_key_value_and_loads_as_prod_settings():
     assert pairs["EMBEDDER"] == "fake"  # the onnx model is switched on only after benchmarking
     assert pairs["EMBED_MODEL"] == "qint8"  # the small model, for a 2 GB Pi
     assert pairs["BACKUP_REQUIRE_MOUNT"] == "1"
+
+
+# ---- cloudflared (Stage 10) -------------------------------------------------------------------
+CLOUDFLARED = DEPLOY / "cloudflared"
+
+
+def render_cloudflared_config() -> str:
+    """Fill the two template variables by hand (no Jinja dependency; Ansible does it for real)."""
+    text = (CLOUDFLARED / "config.yml.j2").read_text()
+    text = text.replace("{{ cloudflared_tunnel_id }}", "00000000-0000-0000-0000-000000000000")
+    text = text.replace("{{ jifunze_hostname }}", "jifunze.example.com")
+    assert "{{" not in text, "template uses a variable this test does not know"
+    return text
+
+
+def test_cloudflared_ingress_points_at_nginx_and_ends_with_a_404():
+    rules = [
+        line.strip()
+        for line in render_cloudflared_config().splitlines()
+        if line.strip().startswith(("- ", "service:", "hostname:")) and "#" not in line
+    ]
+    assert rules == [
+        "- hostname: jifunze.example.com",
+        "service: http://127.0.0.1:8080",
+        "- service: http_status:404",
+    ]
+
+
+def test_cloudflared_credentials_live_under_etc_cloudflared():
+    text = render_cloudflared_config()
+    assert re.search(r"^credentials-file: /etc/cloudflared/[0-9a-f-]+\.json$", text, re.M)
+
+
+def test_cloudflared_unit_is_sandboxed_and_not_the_app_user():
+    parsed = unit(CLOUDFLARED / "cloudflared.service")
+    service = parsed["Service"]
+    assert service["User"] == "cloudflared"
+    assert service["NoNewPrivileges"] == "yes"
+    assert service["ProtectSystem"] == "strict"
+    assert service["CapabilityBoundingSet"] == ""
+    assert "MemoryMax" in service
+    assert "--config /etc/cloudflared/config.yml" in service["ExecStart"]
+    assert parsed["Unit"]["OnFailure"] == "jifunze-failure@%n.service"
+    # It never needs the app's files.
+    assert (
+        "/srv/jifunze"
+        not in (CLOUDFLARED / "cloudflared.service")
+        .read_text()
+        .split("[Unit]")[1]
+        .split("[Service]")[1]
+    )
+
+
+def test_cloudflared_target_matches_the_nginx_listener():
+    assert re.search(r"listen\s+127\.0\.0\.1:8080\b", (NGINX / "jifunze.conf").read_text())
