@@ -1,0 +1,47 @@
+---
+- name: Find the admin user's authorized keys
+  ansible.builtin.stat:
+    path: "/home/{{ ssh_admin_user }}/.ssh/authorized_keys"
+  register: ssh_hardening_keys
+
+- name: Never turn passwords off for a user who has no key
+  ansible.builtin.assert:
+    that:
+      - ssh_hardening_keys.stat.exists
+      - ssh_hardening_keys.stat.size > 0
+    fail_msg: >-
+      /home/{{ ssh_admin_user }}/.ssh/authorized_keys is missing or empty. Add your public key first,
+      or this playbook would lock you out.
+    quiet: true
+
+- name: Key-only SSH
+  block:
+    - name: Install the SSH drop-in
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/10-jifunze.conf
+        content: |
+          PasswordAuthentication no
+          KbdInteractiveAuthentication no
+          PermitRootLogin no
+          PubkeyAuthentication yes
+          AllowUsers {{ ssh_admin_user }}
+          MaxAuthTries 3
+          X11Forwarding no
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload ssh
+
+    - name: Check the whole SSH configuration
+      ansible.builtin.command: /usr/sbin/sshd -t
+      changed_when: false
+      check_mode: false
+  rescue:
+    - name: Remove the drop-in that did not validate
+      ansible.builtin.file:
+        path: /etc/ssh/sshd_config.d/10-jifunze.conf
+        state: absent
+
+    - name: Stop here
+      ansible.builtin.fail:
+        msg: sshd rejected the configuration; the drop-in was removed and SSH is unchanged.

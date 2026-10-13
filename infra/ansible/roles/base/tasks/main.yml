@@ -1,0 +1,69 @@
+---
+- name: Install packages
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - sqlite3
+      - exfatprogs
+      - unattended-upgrades
+      - nftables
+      - curl
+      - ca-certificates
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Turn on unattended security updates
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create the journald drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Cap the journal so logs cannot fill the SD card
+  ansible.builtin.copy:
+    dest: /etc/systemd/journald.conf.d/jifunze.conf
+    content: |
+      [Journal]
+      SystemMaxUse=100M
+      MaxRetentionSec=1month
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart journald
+
+- name: Check whether uv is installed for the admin user
+  ansible.builtin.stat:
+    path: "{{ uv_bin }}"
+  register: base_uv
+
+- name: Check whether Python 3.11 is installed
+  ansible.builtin.stat:
+    path: "{{ python_bin }}"
+  register: base_python
+
+- name: Stop if Python 3.11 is missing and uv is not there to install it
+  ansible.builtin.fail:
+    msg: >-
+      {{ python_bin }} is missing and {{ uv_bin }} is not installed. Install uv by hand (download the
+      release and verify its checksum, docs/PI_SETUP.md section A) and run this again.
+  when: not base_python.stat.exists and not base_uv.stat.exists
+
+- name: Install Python 3.11 under /opt/python (standalone build, the system Python is untouched)
+  ansible.builtin.command:
+    cmd: "{{ uv_bin }} python install 3.11"
+    creates: "{{ python_bin }}"
+  environment:
+    UV_PYTHON_INSTALL_DIR: "{{ python_install_dir }}"
+  when: not base_python.stat.exists

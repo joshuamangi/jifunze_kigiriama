@@ -1,0 +1,24 @@
+#!/usr/sbin/nft -f
+# Managed by Ansible (infra/ansible/roles/firewall). Default deny inbound. The Cloudflare Tunnel
+# and Nginx on 127.0.0.1 need no inbound port: cloudflared connects out.
+flush ruleset
+
+table inet filter {
+    chain input {
+        type filter hook input priority filter; policy drop;
+        iif "lo" accept
+        ct state established,related accept
+        ct state invalid drop
+        # ICMP (ping) and IPv6 neighbour discovery, which IPv6 cannot work without.
+        ip protocol icmp accept
+        ip6 nexthdr icmpv6 accept
+        # SSH from the addresses you listed, nowhere else.
+        ip saddr { {{ ssh_allowed_cidrs | join(', ') }} } tcp dport 22 accept
+    }
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+    }
+    chain output {
+        type filter hook output priority filter; policy accept;
+    }
+}

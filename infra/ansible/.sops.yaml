@@ -1,0 +1,5 @@
+# sops rules. Replace the placeholder with the PUBLIC key printed by `age-keygen` (it starts with
+# "age1"). The matching private key never goes in git: see infra/ansible/README.md.
+creation_rules:
+  - path_regex: secrets\.sops\.yaml$
+    age: REPLACE-WITH-YOUR-age1-PUBLIC-KEY

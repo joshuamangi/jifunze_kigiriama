@@ -1,0 +1,53 @@
+---
+# Non-secret settings. Secrets live in secrets.sops.yaml. Anything marked REQUIRED must be set
+# (here or in the inventory) before the playbook will change anything.
+
+# --- machine and access ---------------------------------------------------------------------------
+ssh_admin_user: ""            # REQUIRED: the login you use over SSH; it must already have a key
+ssh_allowed_cidrs: []         # REQUIRED: who may reach SSH, e.g. ["192.168.1.0/24"]
+
+# --- layout (matches docs/PI_SETUP.md) -------------------------------------------------------------
+service_user: jifunze
+base_dir: /srv/jifunze
+env_dir: /etc/jifunze
+python_install_dir: /opt/python
+python_bin: /opt/python/cpython-3.11-linux-aarch64-gnu/bin/python3.11
+uv_bin: "/home/{{ ssh_admin_user }}/.local/bin/uv"
+
+# --- the SSD (exFAT, never formatted by this playbook) ---------------------------------------------
+ssd_uuid: ""                  # REQUIRED: from `sudo blkid /dev/sda1`, e.g. "ABCD-1234"
+ssd_mount_point: /mnt/ssd
+ssd_uid: 1000                 # `id -u` of the admin user
+ssd_backup_folder: jifunze-backups
+
+# --- the self-hosted GitHub runner (registration itself stays manual: docs/RUNNER_SETUP.md) --------
+runner_enabled: true
+runner_user: ghrunner
+
+# --- the public site -------------------------------------------------------------------------------
+jifunze_hostname: ""          # REQUIRED: e.g. jifunze.example.com
+app_timezone: Africa/Nairobi
+alert_email: ""
+smtp_host: ""
+smtp_port: 587
+smtp_user: ""
+smtp_from: ""
+
+# --- Cloudflare Tunnel (docs/CLOUDFLARE_SETUP.md) --------------------------------------------------
+cloudflared_enabled: false    # turn on once the tunnel and credentials exist
+cloudflared_tunnel_id: ""     # UUID from `cloudflared tunnel create`
+cloudflared_version: ""       # a released version, e.g. 2025.x.y: look it up, do not guess
+cloudflared_deb_sha256: ""    # sha256 of cloudflared-linux-arm64.deb for that version, from the release page
+
+# --- optional Cloudflare Access gate in the app (app/access.py) ------------------------------------
+cf_access_enabled: false
+cf_access_team_domain: ""
+cf_access_aud: ""
+
+# --- app tuning copied into /etc/jifunze/jifunze.env -----------------------------------------------
+embedder: fake                # switch to onnx only after `make bench-embed` on the Pi
+embed_model: qint8
+argon2_memory_kib: 19456
+argon2_time_cost: 2
+argon2_parallelism: 1
+password_min_length: 12

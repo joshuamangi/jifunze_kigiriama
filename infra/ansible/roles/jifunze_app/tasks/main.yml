@@ -1,0 +1,47 @@
+---
+# The machine side of the app: units, timers and the environment file. The code itself arrives
+# through deploy/deploy.sh (GitHub Actions or by hand), never through this playbook.
+- name: Read which services are running
+  ansible.builtin.service_facts:
+
+- name: Install the systemd units and timers
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../deploy/systemd/"
+    dest: /etc/systemd/system/
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Write the environment file
+  ansible.builtin.template:
+    src: jifunze.env.j2
+    dest: "{{ env_dir }}/jifunze.env"
+    owner: root
+    group: "{{ service_user }}"
+    mode: "0640"
+  no_log: true
+  notify: Restart the app if it is running
+
+- name: Pick up new units now, before enabling them
+  ansible.builtin.meta: flush_handlers
+
+- name: Check whether a release has been deployed
+  ansible.builtin.stat:
+    path: "{{ base_dir }}/current"
+  register: jifunze_app_current
+
+- name: Enable the app (it starts at the first deploy)
+  ansible.builtin.systemd:
+    name: jifunze.service
+    enabled: true
+
+- name: Enable the timers, and start them once there is a release to run
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: "{{ 'started' if jifunze_app_current.stat.exists else omit }}"
+  loop:
+    - jifunze-reminders.timer
+    - jifunze-backup.timer
+    - jifunze-optimize.timer

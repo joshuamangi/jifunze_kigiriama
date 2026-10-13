@@ -40,3 +40,14 @@ build/
 jar
 *.jar
 cookies*.txt
+
+# Infrastructure: the real inventory, decrypted secrets and age private keys never go in git.
+# secrets.sops.yaml (encrypted) is the only secrets file that may be committed.
+infra/ansible/inventory/hosts.yml
+infra/ansible/secrets.yaml
+infra/ansible/collections/
+infra/terraform/*.tfstate*
+infra/terraform/.terraform/
+infra/terraform/*.tfvars
+keys.txt
+*.agekey

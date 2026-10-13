@@ -1,0 +1,64 @@
+---
+- name: Create the service group
+  ansible.builtin.group:
+    name: "{{ service_user }}"
+    system: true
+
+- name: Create the service user (no login, no home directory)
+  ansible.builtin.user:
+    name: "{{ service_user }}"
+    group: "{{ service_user }}"
+    system: true
+    home: "{{ base_dir }}"
+    create_home: false
+    shell: /usr/sbin/nologin
+
+- name: Let Nginx reach the app socket (www-data joins the service group)
+  ansible.builtin.user:
+    name: www-data
+    groups: "{{ service_user }}"
+    append: true
+
+- name: Base directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "{{ base_dir }}", mode: "0755" }
+    # setgid and group-writable so the GitHub runner user (group jifunze) can deploy.
+    - { path: "{{ base_dir }}/releases", mode: "{{ '2775' if runner_enabled | bool else '0755' }}" }
+    - { path: "{{ base_dir }}/incoming", mode: "{{ '2775' if runner_enabled | bool else '0755' }}" }
+    - { path: "{{ base_dir }}/data", mode: "{{ '2770' if runner_enabled | bool else '0750' }}" }
+    - { path: "{{ base_dir }}/models", mode: "0750" }
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: The backups mount point (ownership comes from the exFAT mount options once mounted)
+  ansible.builtin.file:
+    path: "{{ base_dir }}/backups"
+    state: directory
+    mode: "0750"
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+  when: ansible_facts.mounts | selectattr('mount', 'equalto', base_dir + '/backups') | list | length == 0
+
+- name: Environment directory
+  ansible.builtin.file:
+    path: "{{ env_dir }}"
+    state: directory
+    owner: root
+    group: "{{ service_user }}"
+    mode: "0750"
+
+- name: Let the service user restart the one service, and nothing else
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/jifunze
+    content: |
+      {{ service_user }} ALL=(root) NOPASSWD: /usr/bin/systemctl restart jifunze.service
+    owner: root
+    group: root
+    mode: "0440"
+    validate: /usr/sbin/visudo -cf %s

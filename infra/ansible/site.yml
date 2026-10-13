@@ -1,0 +1,51 @@
+---
+# Builds the Pi from a fresh Raspberry Pi OS Lite install. Idempotent: run it again any time.
+#   Check first (changes nothing):  ansible-playbook site.yml --check --diff
+#   Apply:                          ansible-playbook site.yml
+# From the Pi itself (ansible-pull): see README.md.
+# Needs: the collections in requirements.yml, and the age private key for secrets.sops.yaml.
+- name: Jifunze Kigiriama machine
+  hosts: "{{ jifunze_hosts | default('jifunze') }}"
+  become: true
+  pre_tasks:
+    - name: Refuse to run without the required settings
+      ansible.builtin.assert:
+        that:
+          - ssh_admin_user | length > 0
+          - ssh_allowed_cidrs | length > 0
+          - ssd_uuid | length > 0
+          - jifunze_hostname | length > 0
+        fail_msg: >-
+          Set ssh_admin_user, ssh_allowed_cidrs, ssd_uuid and jifunze_hostname in
+          group_vars/all.yml (see the REQUIRED markers there).
+        quiet: true
+      tags: always
+
+    - name: Load the encrypted secrets
+      community.sops.load_vars:
+        file: "{{ playbook_dir }}/secrets.sops.yaml"
+      no_log: true
+      tags: always
+
+  roles:
+    - role: base
+      tags: [base]
+    - role: jifunze_user
+      tags: [user]
+    - role: ssd_mount
+      tags: [ssd]
+    - role: runner_prereqs
+      when: runner_enabled | bool
+      tags: [runner]
+    - role: nginx
+      tags: [nginx]
+    - role: jifunze_app
+      tags: [app]
+    - role: cloudflared
+      when: cloudflared_enabled | bool
+      tags: [cloudflared]
+    # SSH and the firewall last: if anything above fails you are not locked out yet.
+    - role: ssh_hardening
+      tags: [ssh]
+    - role: firewall
+      tags: [firewall]
