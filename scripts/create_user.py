@@ -27,7 +27,14 @@ def main() -> int:
     settings = Settings.from_env()
     db = Database(settings.database_path, readers=1)
     try:
-        user_id = create_user(db, PasswordService(settings), args.username, password, args.role)
+        user_id = create_user(
+            db,
+            PasswordService(settings),
+            args.username,
+            password,
+            args.role,
+            min_length=settings.password_min_length,
+        )
     except UserError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
