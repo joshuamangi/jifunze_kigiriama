@@ -210,5 +210,10 @@ Run commands on the Pi (`ssh <your-user>@<pi-ip>`) unless it says "on your Mac".
   `app.db-wal` and `app.db-shm` next to it; `sudo chown jifunze:jifunze` the file;
   `sudo systemctl start jifunze`. Stage 10 adds a full restore drill.
 - **SD card failing:** restore on a new card from the latest file on the SSD (or the second copy).
+- **Forgot a password, or want a different one:** on the Pi, from `/srv/jifunze/current`:
+  `sudo -u jifunze bash -c 'set -a; . /etc/jifunze/jifunze.env; set +a; PYTHONPATH=. .venv/bin/python scripts/reset_password.py --username NAME'`
+  (needs a terminal: use `ssh -t`). It asks for the new password twice, applies
+  `PASSWORD_MIN_LENGTH`, signs that account out everywhere and writes an audit entry. Locally:
+  `make reset-password NAME=...`.
 - **Release rule:** migrations must be backward compatible (add in one release, remove in a later
   one), so the previous code always runs on the new schema.
