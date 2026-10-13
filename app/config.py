@@ -49,6 +49,19 @@ def _int(env: dict[str, str], name: str, default: int) -> int:
     return value
 
 
+MIN_PASSWORD_FLOOR = 6  # PASSWORD_MIN_LENGTH can be lowered this far, never further
+MAX_PASSWORD_MIN = 128
+
+
+def _password_min(env: dict[str, str]) -> int:
+    value = _int(env, "PASSWORD_MIN_LENGTH", 12)
+    if not MIN_PASSWORD_FLOOR <= value <= MAX_PASSWORD_MIN:
+        raise ConfigError(
+            f"PASSWORD_MIN_LENGTH must be between {MIN_PASSWORD_FLOOR} and {MAX_PASSWORD_MIN}"
+        )
+    return value
+
+
 def _threads(env: dict[str, str]) -> int:
     value = _int(env, "THREADPOOL_SIZE", 12)
     if not 8 <= value <= 16:
@@ -79,6 +92,7 @@ class Settings:
     threadpool_size: int = 12  # sync route handlers run in this many threads (8 to 16 on a Pi)
     slow_query_ms: int = 100  # database work slower than this is logged as a warning
     backup_stamp_path: str = "data/last_backup"  # touched by the backup job; mtime = last backup
+    password_min_length: int = 12  # applied when an account is created; 6 is the lowest allowed
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> "Settings":
@@ -109,6 +123,7 @@ class Settings:
             threadpool_size=_threads(env),
             slow_query_ms=_int(env, "SLOW_QUERY_MS", 100),
             backup_stamp_path=env.get("BACKUP_STAMP_PATH", "data/last_backup"),
+            password_min_length=_password_min(env),
         )
         if app_env == "prod" and settings.session_secret in {"", DEV_SESSION_SECRET}:
             raise ConfigError("SESSION_SECRET must be set to a real secret when APP_ENV=prod")

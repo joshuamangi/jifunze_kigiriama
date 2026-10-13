@@ -144,7 +144,24 @@ def test_auth_settings_reject_bad_numbers():
         Settings.from_env({"SESSION_IDLE_SECONDS": "0"})
 
 
+def test_password_minimum_is_configurable_within_limits():
+    assert Settings.from_env({}).password_min_length == 12
+    assert Settings.from_env({"PASSWORD_MIN_LENGTH": "6"}).password_min_length == 6
+    for bad in ("5", "0", "-1", "129", "short"):
+        with pytest.raises(ConfigError, match="PASSWORD_MIN_LENGTH|integer|positive"):
+            Settings.from_env({"PASSWORD_MIN_LENGTH": bad})
+
+
 # ---- accounts ------------------------------------------------------------------------------
+def test_create_user_uses_the_configured_minimum(app, db):
+    passwords = app.state.passwords
+    with pytest.raises(UserError, match="12 to"):
+        create_user(db, passwords, "eve", "x" * 11, "member")  # the default is still 12
+    with pytest.raises(UserError, match="6 to"):
+        create_user(db, passwords, "eve", "x" * 5, "member", min_length=6)
+    assert create_user(db, passwords, "eve", "x" * 6, "member", min_length=6) > 0
+
+
 def test_create_user_validates_and_rejects_case_insensitive_duplicates(app, db):
     passwords = app.state.passwords
     create_user(db, passwords, "Amina", GOOD_PASSWORD, "member")
