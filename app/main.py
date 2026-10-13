@@ -7,6 +7,7 @@ import anyio.to_thread
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from app.access import install_access_gate
 from app.api.admin import router as admin_router
 from app.api.auth import router as auth_router
 from app.api.entries import router as entries_router
@@ -91,6 +92,7 @@ def create_app(
     # the CSRF guard, so even a 413 or 403 carries the security headers.
     install_request_guard(app)
     app.add_middleware(BodyLimitMiddleware, max_bytes=app.state.settings.max_body_bytes)
+    install_access_gate(app)
     app.add_middleware(RequestContextMiddleware, settings=app.state.settings)
     app.include_router(auth_router)
     app.include_router(entries_router)
