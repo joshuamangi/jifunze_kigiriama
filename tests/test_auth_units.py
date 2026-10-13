@@ -218,3 +218,45 @@ def test_create_user_command_refuses_mismatched_passwords(monkeypatch, tmp_path,
     monkeypatch.setattr("getpass.getpass", lambda _prompt="": next(answers))
     assert _load_script().main() == 1
     assert "do not match" in capsys.readouterr().err
+
+
+# ---- password reset ----------------------------------------------------------------------------
+def test_reset_password_replaces_the_password_and_signs_the_user_out(client, app, db, make_user):
+    from app.users import reset_password
+    from tests.helpers import login
+
+    make_user("amina")
+    assert login(client, "amina").status_code == 200
+    assert client.get("/api/me").status_code == 200
+
+    reset_password(db, app.state.passwords, "AMINA", "new passphrase here")  # case-insensitive
+
+    assert client.get("/api/me").status_code == 401  # the old session is gone
+    assert login(client, "amina").status_code == 401  # the old password no longer works
+    assert login(client, "amina", "new passphrase here").status_code == 200
+    with db.read() as conn:
+        row = conn.execute(
+            "SELECT action, target, detail FROM audit_log WHERE action = 'user.password_reset'"
+        ).fetchone()
+    assert tuple(row) == ("user.password_reset", "user:1", "amina")
+
+
+def test_reset_password_only_touches_the_named_account(client, app, db, make_user):
+    from app.users import reset_password
+    from tests.helpers import login
+
+    make_user("amina")
+    make_user("baraka")
+    reset_password(db, app.state.passwords, "amina", "new passphrase here")
+    assert login(client, "baraka").status_code == 200  # untouched: still the original password
+
+
+def test_reset_password_rules(app, db, make_user):
+    from app.users import reset_password
+
+    make_user("amina")
+    with pytest.raises(UserError, match="no account"):
+        reset_password(db, app.state.passwords, "nobody", "new passphrase here")
+    with pytest.raises(UserError, match="12 to"):
+        reset_password(db, app.state.passwords, "amina", "x" * 11)  # same minimum as sign-up
+    reset_password(db, app.state.passwords, "amina", "x" * 6, min_length=6)  # configured minimum

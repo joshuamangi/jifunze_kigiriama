@@ -7,7 +7,7 @@ ENV_PATH := $(abspath $(ENV_FILE))
 # timeout: slow-client timeouts belong to Nginx (client_header_timeout, client_body_timeout).
 UVICORN_LIMITS := --limit-concurrency 64 --timeout-keep-alive 5 --timeout-graceful-shutdown 10 --no-server-header --no-access-log
 
-.PHONY: install run test lint lock check-nginx check-web-size audit audit-deps audit-secrets migrate seed create-user bench-argon2 download-model bench-embed reindex send-reminders import-grammar
+.PHONY: install run test lint lock check-nginx check-web-size audit audit-deps audit-secrets migrate seed create-user reset-password bench-argon2 download-model bench-embed reindex send-reminders import-grammar
 
 install:
 	$(PYTHON) -m venv $(VENV)
@@ -65,6 +65,10 @@ seed:
 create-user:
 	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; \
 	$(BIN)/python scripts/create_user.py --username "$(NAME)" --role "$(or $(ROLE),member)"
+
+reset-password:
+	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; \
+	$(BIN)/python scripts/reset_password.py --username "$(NAME)"
 
 bench-argon2:
 	set -a; [ ! -f $(ENV_PATH) ] || . $(ENV_PATH); set +a; $(BIN)/python scripts/bench_argon2.py
