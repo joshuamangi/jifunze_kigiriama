@@ -1,0 +1,31 @@
+---
+# The SSD stays exFAT with its existing files. Nothing here formats or erases it.
+- name: Look up the service group id (the exFAT mount options need it)
+  ansible.builtin.getent:
+    database: group
+    key: "{{ service_user }}"
+
+- name: Mount the SSD by UUID, read by the service group only
+  ansible.posix.mount:
+    path: "{{ ssd_mount_point }}"
+    src: "UUID={{ ssd_uuid }}"
+    fstype: exfat
+    opts: >-
+      uid={{ ssd_uid }},gid={{ ansible_facts.getent_group[service_user][1] }},dmask=0007,fmask=0117,noatime,nofail,x-systemd.device-timeout=10
+    state: mounted
+
+- name: The backups folder on the SSD
+  ansible.builtin.file:
+    path: "{{ ssd_mount_point }}/{{ ssd_backup_folder }}"
+    state: directory
+    mode: "0770"
+  # exFAT has no owners; a --check run before the first mount has nothing to create it in.
+  when: not ansible_check_mode
+
+- name: Bind the backups folder into the app tree (the units can then reach nothing else on the SSD)
+  ansible.posix.mount:
+    path: "{{ base_dir }}/backups"
+    src: "{{ ssd_mount_point }}/{{ ssd_backup_folder }}"
+    fstype: none
+    opts: "bind,nofail,x-systemd.requires-mounts-for={{ ssd_mount_point }}"
+    state: mounted

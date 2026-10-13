@@ -1,0 +1,77 @@
+---
+- name: Refuse to continue without the pinned download and the tunnel id
+  ansible.builtin.assert:
+    that:
+      - cloudflared_tunnel_id | length > 0
+      - cloudflared_version | length > 0
+      - cloudflared_deb_sha256 | length == 64
+    fail_msg: >-
+      Set cloudflared_tunnel_id, cloudflared_version and cloudflared_deb_sha256 (64 hex characters,
+      from that release's page) in group_vars/all.yml. docs/CLOUDFLARE_SETUP.md says where to get them.
+    quiet: true
+
+- name: Download cloudflared (arm64 .deb from the pinned release, checksum verified)
+  ansible.builtin.get_url:
+    url: "https://github.com/cloudflare/cloudflared/releases/download/{{ cloudflared_version }}/cloudflared-linux-arm64.deb"
+    dest: "/var/cache/cloudflared-{{ cloudflared_version }}-arm64.deb"
+    checksum: "sha256:{{ cloudflared_deb_sha256 }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install cloudflared
+  ansible.builtin.apt:
+    deb: "/var/cache/cloudflared-{{ cloudflared_version }}-arm64.deb"
+    state: present
+
+- name: Create the tunnel user (can read only /etc/cloudflared)
+  ansible.builtin.user:
+    name: cloudflared
+    system: true
+    create_home: false
+    shell: /usr/sbin/nologin
+
+- name: Configuration directory
+  ansible.builtin.file:
+    path: /etc/cloudflared
+    state: directory
+    owner: root
+    group: cloudflared
+    mode: "0750"
+
+- name: Tunnel configuration
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../../deploy/cloudflared/config.yml.j2"
+    dest: /etc/cloudflared/config.yml
+    owner: root
+    group: cloudflared
+    mode: "0640"
+  notify: Restart cloudflared
+
+- name: Tunnel credentials (from the encrypted secrets file)
+  ansible.builtin.copy:
+    content: "{{ cloudflared_credentials_json }}"
+    dest: "/etc/cloudflared/{{ cloudflared_tunnel_id }}.json"
+    owner: root
+    group: cloudflared
+    mode: "0640"
+  no_log: true
+  notify: Restart cloudflared
+
+- name: Tunnel unit
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../deploy/cloudflared/cloudflared.service"
+    dest: /etc/systemd/system/cloudflared.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd for cloudflared
+    - Restart cloudflared
+
+- name: Enable and start the tunnel
+  ansible.builtin.systemd:
+    name: cloudflared.service
+    enabled: true
+    state: started
+    daemon_reload: true

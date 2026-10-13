@@ -1,0 +1,18 @@
+---
+# Keep a second SSH session open the first time this runs. The rules are syntax-checked before they
+# are written, but a wrong ssh_allowed_cidrs would still lock out an address you meant to allow.
+- name: Install the firewall rules
+  ansible.builtin.template:
+    src: nftables.conf.j2
+    dest: /etc/nftables.conf
+    owner: root
+    group: root
+    mode: "0640"
+    validate: /usr/sbin/nft -c -f %s
+  notify: Reload nftables
+
+- name: Enable and start nftables
+  ansible.builtin.systemd:
+    name: nftables
+    enabled: true
+    state: started

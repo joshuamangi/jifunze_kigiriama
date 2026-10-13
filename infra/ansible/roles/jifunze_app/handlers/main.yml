@@ -1,0 +1,10 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart the app if it is running
+  ansible.builtin.systemd:
+    name: jifunze.service
+    state: restarted
+  when: ansible_facts.services['jifunze.service'] is defined and ansible_facts.services['jifunze.service'].state == 'running'

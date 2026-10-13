@@ -1,0 +1,27 @@
+---
+# Only the prerequisites. Registering the runner needs a token from GitHub's settings page, so that
+# stays manual: docs/RUNNER_SETUP.md steps 5 to 6.
+- name: Install gh (the deploy workflow downloads the release with it)
+  ansible.builtin.apt:
+    name: gh
+    state: present
+
+- name: Create the runner user (no password, not in the sudo group)
+  ansible.builtin.user:
+    name: "{{ runner_user }}"
+    system: true
+    create_home: true
+    home: "/home/{{ runner_user }}"
+    shell: /bin/bash
+    groups: "{{ service_user }}"
+    append: true
+
+- name: Let the runner restart the one service, and nothing else
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/jifunze-runner
+    content: |
+      {{ runner_user }} ALL=(root) NOPASSWD: /usr/bin/systemctl restart jifunze.service
+    owner: root
+    group: root
+    mode: "0440"
+    validate: /usr/sbin/visudo -cf %s

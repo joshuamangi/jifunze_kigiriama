@@ -93,6 +93,9 @@ class Settings:
     slow_query_ms: int = 100  # database work slower than this is logged as a warning
     backup_stamp_path: str = "data/last_backup"  # touched by the backup job; mtime = last backup
     password_min_length: int = 12  # applied when an account is created; 6 is the lowest allowed
+    cf_access_enabled: bool = False  # require a valid Cloudflare Access JWT on every request
+    cf_access_team_domain: str = ""  # e.g. myteam.cloudflareaccess.com (issuer and key set)
+    cf_access_aud: str = ""  # the Access application's audience tag
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> "Settings":
@@ -124,7 +127,16 @@ class Settings:
             slow_query_ms=_int(env, "SLOW_QUERY_MS", 100),
             backup_stamp_path=env.get("BACKUP_STAMP_PATH", "data/last_backup"),
             password_min_length=_password_min(env),
+            cf_access_enabled=_bool(env.get("CF_ACCESS_ENABLED"), default=False),
+            cf_access_team_domain=env.get("CF_ACCESS_TEAM_DOMAIN", "").strip().lower(),
+            cf_access_aud=env.get("CF_ACCESS_AUD", "").strip(),
         )
+        if settings.cf_access_enabled and not (
+            settings.cf_access_team_domain and settings.cf_access_aud
+        ):
+            raise ConfigError(
+                "CF_ACCESS_ENABLED needs both CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD"
+            )
         if app_env == "prod" and settings.session_secret in {"", DEV_SESSION_SECRET}:
             raise ConfigError("SESSION_SECRET must be set to a real secret when APP_ENV=prod")
         return settings

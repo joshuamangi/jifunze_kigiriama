@@ -1,0 +1,5 @@
+# Copy to terraform.tfvars (git-ignored) and fill in.
+account_id     = "CHANGE-ME"
+zone_id        = "CHANGE-ME"
+hostname       = "jifunze.example.com"
+allowed_emails = ["you@example.com"]

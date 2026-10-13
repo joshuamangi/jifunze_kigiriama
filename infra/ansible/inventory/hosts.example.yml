@@ -1,0 +1,9 @@
+---
+# Copy to hosts.yml (git-ignored) and fill in. One host: the Pi.
+all:
+  children:
+    jifunze:
+      hosts:
+        jifunze-pi:
+          ansible_host: PI-IP-ADDRESS
+          ansible_user: YOUR-ADMIN-USER

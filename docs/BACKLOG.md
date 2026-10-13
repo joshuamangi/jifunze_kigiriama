@@ -46,9 +46,26 @@ change the stages there.
 - [ ] No ARM64 CI job: the repo is private, and GitHub's free ARM64 hosted runners are for public repos. The Pi deploy is the first ARM64 run.
 - [ ] Checksum in the release only guards against corruption. Add artifact attestation if you want tamper-evidence.
 
-## Stage 10: Cloudflare Tunnel and Access
-- [ ] Cloudflare Access email allow-list in front of the hostname; set `ALLOWED_ORIGINS` to it.
-- [ ] Restore drill from a real backup before going live.
+## Stage 10: Cloudflare Tunnel, Access and infrastructure as code
+Written 2026-10-13 and validated on the Mac only. None of it has run against the Pi or Cloudflare.
+- [x] Access JWT middleware (`app/access.py`, `CF_ACCESS_*`), tested with a local key pair.
+- [x] `deploy/cloudflared/` config template and sandboxed unit.
+- [x] `infra/ansible/` (`ansible-lint --profile production` clean, `--syntax-check` passes).
+- [x] `infra/terraform/` (`terraform validate` passes against provider v5.27). Optional.
+- [x] `scripts/restore_drill.py` / `make restore-drill`; `docs/CLOUDFLARE_SETUP.md`,
+      `docs/RESTORE_DRILL.md`, `docs/GO_LIVE.md`.
+- [ ] Generate the age key, fill `.sops.yaml`, create `infra/ansible/secrets.sops.yaml`
+      (`infra/ansible/README.md`). Back up the private key.
+- [ ] Fill `group_vars/all.yml` and `inventory/hosts.yml`; run `ansible-playbook site.yml --check --diff`
+      against the Pi and read it. Likely surprises: the mount options on the exFAT SSD, the firewall
+      rule for your network, the `uv` path.
+- [ ] Cloudflare steps in `docs/CLOUDFLARE_SETUP.md` (tunnel, DNS, Access application, email allow-list).
+      Then `cloudflared_enabled`, and last `cf_access_enabled`.
+- [ ] Look up the cloudflared release and its sha256 (never guessed in the repo).
+- [ ] Restore drill from a real Pi backup, rollback rehearsal, and the rest of `docs/GO_LIVE.md`.
+- [ ] Decide whether Nginx should also check the Access token for static files (`auth_request`);
+      today those rely on Cloudflare Access at the edge only.
+- [ ] `ansible-pull` is documented but unrun; it needs sops installed on the Pi and puts the age key there.
 
 ## Yours to fill in (not code)
 - [ ] Noun classes and verb paradigms from Taylor's front matter, into the review file for

@@ -11,6 +11,7 @@ dependencies = [
     "tokenizers",  # turns text into the token ids the model expects; aarch64 wheel
     "numpy",  # array maths for pooling; onnxruntime needs it anyway
     "sqlite-vec",  # vec0 vector tables for semantic search; ships aarch64 wheels
+    "pyjwt[crypto]",  # verifies the Cloudflare Access JWT (RS256); pure Python, and its cryptography extra ships aarch64 manylinux wheels
 ]
 
 [project.optional-dependencies]
