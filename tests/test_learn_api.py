@@ -9,8 +9,10 @@ from app.seed import VERIFIED_NUMBERS
 from app.services import learn
 from tests.helpers import GUARD_HEADERS
 
-TODAY = date.today()
 SETTINGS = Settings.from_env({})
+# The app's own "today" (APP_TIMEZONE, UTC in the test settings), not the machine's local date:
+# between midnight and 03:00 in Nairobi the two differ by a day.
+TODAY = learn.today_in(SETTINGS)
 
 
 @pytest.fixture
