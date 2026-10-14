@@ -1,5 +1,5 @@
-# sops rules. Replace the placeholder with the PUBLIC key printed by `age-keygen` (it starts with
-# "age1"). The matching private key never goes in git: see infra/ansible/README.md.
+# sops rules. "age" is the PUBLIC key of the recipient (safe to commit). The matching private key
+# lives only in ~/.config/sops/age/keys.txt and a password manager: see infra/ansible/README.md.
 creation_rules:
   - path_regex: secrets\.sops\.yaml$
-    age: REPLACE-WITH-YOUR-age1-PUBLIC-KEY
+    age: age1qxsu4hhjgwd2cd9fj6l0lgq6cprnstde9qw5xxdh4g2e34hqya8slxreqs
