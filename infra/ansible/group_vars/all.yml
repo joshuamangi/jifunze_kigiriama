@@ -3,8 +3,8 @@
 # (here or in the inventory) before the playbook will change anything.
 
 # --- machine and access ---------------------------------------------------------------------------
-ssh_admin_user: ""            # REQUIRED: the login you use over SSH; it must already have a key
-ssh_allowed_cidrs: []         # REQUIRED: who may reach SSH, e.g. ["192.168.1.0/24"]
+ssh_admin_user: joshuamangi #  REQUIRED: the login you use over SSH; it must already have a key
+ssh_allowed_cidrs: ["192.168.1.0/24"] # REQUIRED: who may reach SSH, e.g. ["192.168.1.0/24"]
 
 # --- layout (matches docs/PI_SETUP.md) -------------------------------------------------------------
 service_user: jifunze
@@ -15,7 +15,7 @@ python_bin: /opt/python/cpython-3.11-linux-aarch64-gnu/bin/python3.11
 uv_bin: "/home/{{ ssh_admin_user }}/.local/bin/uv"
 
 # --- the SSD (exFAT, never formatted by this playbook) ---------------------------------------------
-ssd_uuid: ""                  # REQUIRED: from `sudo blkid /dev/sda1`, e.g. "ABCD-1234"
+ssd_uuid: "6CC9-03E2"       # REQUIRED: from `sudo blkid /dev/sda1`, e.g. "ABCD-1234"
 ssd_mount_point: /mnt/ssd
 ssd_uid: 1000                 # `id -u` of the admin user
 ssd_backup_folder: jifunze-backups
@@ -27,9 +27,9 @@ runner_user: ghrunner
 # --- the public site -------------------------------------------------------------------------------
 # What the app accepts as its own address (the Origin check) and uses in links. Until Cloudflare is
 # set up this is the LAN address; afterwards the public one. A wrong value breaks signing in.
-allowed_origins: []           # REQUIRED: e.g. ["http://192.168.1.121:8080"]; later ["https://jifunze.example.com"]
-app_base_url: ""              # REQUIRED: one of the above, e.g. "http://192.168.1.121:8080"
-jifunze_hostname: ""          # only for the tunnel (cloudflared_enabled): e.g. jifunze.example.com
+allowed_origins: ["http://192.168.1.121:8080", "http://localhost:8080"] # REQUIRED: e.g. ["http://192.168.1.121:8080"]; later ["https://jifunze.example.com"]
+app_base_url: "http://192.168.1.121:8080" # REQUIRED: one of the above, e.g. "http://192.168.1.121:8080"
+jifunze_hostname: "kigiriama.techjamaa.com" # only for the tunnel (cloudflared_enabled): e.g. jifunze.example.com
 reminder_backend: console     # "smtp" once smtp_host, smtp_user, smtp_from and the secret are set
 app_timezone: Africa/Nairobi
 alert_email: ""
