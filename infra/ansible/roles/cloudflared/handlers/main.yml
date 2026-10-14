@@ -7,3 +7,5 @@
   ansible.builtin.systemd:
     name: cloudflared.service
     state: restarted
+  # In --check mode the unit is not really installed yet, so systemd cannot find it.
+  ignore_errors: "{{ ansible_check_mode }}"

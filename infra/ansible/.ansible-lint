@@ -1,0 +1,5 @@
+---
+# Ciphertext lines in the sops file are long by nature, and collections/ is downloaded code.
+exclude_paths:
+  - secrets.sops.yaml
+  - collections/
