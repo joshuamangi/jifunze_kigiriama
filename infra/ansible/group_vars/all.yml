@@ -45,7 +45,7 @@ cloudflared_version: "2026.10.0"       # a released version, e.g. 2025.x.y: look
 cloudflared_deb_sha256: "7e0d76de3858b6396bd234ae26182bee222133398667d2647b90381d00c00e98" # sha256 of cloudflared-linux-arm64.deb
 
 # --- optional Cloudflare Access gate in the app (app/access.py) ------------------------------------
-cf_access_enabled: false
+cf_access_enabled: true 
 cf_access_team_domain: "icy-feather-f85d.cloudflareaccess.com"
 cf_access_aud: "dc86ae51371b5ec49f316a9c3eeba50403948081582f27b1a4c2bb9a9e99ab8a"  # public Access audience tag, not a secret (gitleaks:allow)
 
