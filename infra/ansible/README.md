@@ -57,9 +57,14 @@ Only the **encrypted** file is committed (`tests/test_infra.py` fails if a plain
    $EDITOR secrets.sops.yaml                        # real values
    sops --encrypt --in-place secrets.sops.yaml
    ```
-   Edit later with `sops secrets.sops.yaml`. Ansible reads it with `community.sops` and needs
-   `SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt` (that is sops' default location, so usually
-   nothing to set).
+   Edit later with `sops secrets.sops.yaml`. Encrypting needs only the public key, but decrypting
+   (and Ansible, through `community.sops`) must be told where the private key is. **On macOS sops
+   does not look in `~/.config`** (its default there is `~/Library/Application Support/sops/age/`),
+   so set this once and keep it:
+   ```
+   echo 'export SOPS_AGE_KEY_FILE="$HOME/.config/sops/age/keys.txt"' >> ~/.zshrc && source ~/.zshrc
+   ```
+   Without it, `sops --decrypt` fails with "identity did not match any of the recipients".
 
 ## Run it
 
