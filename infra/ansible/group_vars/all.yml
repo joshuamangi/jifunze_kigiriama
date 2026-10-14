@@ -40,9 +40,9 @@ smtp_from: ""
 
 # --- Cloudflare Tunnel (docs/CLOUDFLARE_SETUP.md) --------------------------------------------------
 cloudflared_enabled: false    # turn on once the tunnel and credentials exist
-cloudflared_tunnel_id: ""     # UUID from `cloudflared tunnel create`
-cloudflared_version: ""       # a released version, e.g. 2025.x.y: look it up, do not guess
-cloudflared_deb_sha256: ""    # sha256 of cloudflared-linux-arm64.deb for that version, from the release page
+cloudflared_tunnel_id: "3ed35e0e-daf1-41e7-90cf-5c6f6a3e49bb"     # UUID from `cloudflared tunnel create`
+cloudflared_version: "2026.10.0"       # a released version, e.g. 2025.x.y: look it up, do not guess
+cloudflared_deb_sha256: "7e0d76de3858b6396bd234ae26182bee222133398667d2647b90381d00c00e98"    # sha256 of cloudflared-linux-arm64.deb for that version, from the release page
 
 # --- optional Cloudflare Access gate in the app (app/access.py) ------------------------------------
 cf_access_enabled: false
