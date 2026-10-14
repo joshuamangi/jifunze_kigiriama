@@ -14,9 +14,10 @@
           - ssh_admin_user | length > 0
           - ssh_allowed_cidrs | length > 0
           - ssd_uuid | length > 0
-          - jifunze_hostname | length > 0
+          - allowed_origins | length > 0
+          - app_base_url | length > 0
         fail_msg: >-
-          Set ssh_admin_user, ssh_allowed_cidrs, ssd_uuid and jifunze_hostname in
+          Set ssh_admin_user, ssh_allowed_cidrs, ssd_uuid, allowed_origins and app_base_url in
           group_vars/all.yml (see the REQUIRED markers there).
         quiet: true
       tags: always
@@ -25,7 +26,8 @@
       community.sops.load_vars:
         file: "{{ playbook_dir }}/secrets.sops.yaml"
       no_log: true
-      tags: always
+      # "secrets" lets a --check rehearsal skip this with --skip-tags secrets and dummy -e values.
+      tags: [always, secrets]
 
   roles:
     - role: base

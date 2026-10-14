@@ -3,10 +3,11 @@
   ansible.builtin.assert:
     that:
       - cloudflared_tunnel_id | length > 0
+      - jifunze_hostname | length > 0
       - cloudflared_version | length > 0
       - cloudflared_deb_sha256 | length == 64
     fail_msg: >-
-      Set cloudflared_tunnel_id, cloudflared_version and cloudflared_deb_sha256 (64 hex characters,
+      Set jifunze_hostname, cloudflared_tunnel_id, cloudflared_version and cloudflared_deb_sha256 (64 hex characters,
       from that release's page) in group_vars/all.yml. docs/CLOUDFLARE_SETUP.md says where to get them.
     quiet: true
 
