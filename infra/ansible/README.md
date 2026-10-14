@@ -33,7 +33,7 @@ ansible-galaxy collection install -r requirements.yml -p collections
 cp inventory/hosts.example.yml inventory/hosts.yml     # fill in the Pi's address and your login
 ```
 Then edit `group_vars/all.yml`: set every value marked REQUIRED (`ssh_admin_user`,
-`ssh_allowed_cidrs`, `ssd_uuid`, `jifunze_hostname`). `ssh_allowed_cidrs` is IPv4 only; SSH over IPv6
+`ssh_allowed_cidrs`, `ssd_uuid`, `allowed_origins`, `app_base_url`). `ssh_allowed_cidrs` is IPv4 only; SSH over IPv6
 is blocked.
 
 ## Secrets: sops + age

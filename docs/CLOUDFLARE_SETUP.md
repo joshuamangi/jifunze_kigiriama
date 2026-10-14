@@ -64,7 +64,9 @@ the local health check. Nginx serves the static files in `web/` itself; those ar
 Access at Cloudflare's edge, not by the app check.
 
 Then `ansible-playbook site.yml --check --diff`, apply, and run the checks in `docs/GO_LIVE.md`.
-Also set `ALLOWED_ORIGINS` (done for you: the env file uses `https://<jifunze_hostname>`).
+Also change `allowed_origins` to `["https://<hostname>"]` and `app_base_url` to the same address (they were
+the LAN address until now), or sign-in through the public address is refused. Keep the LAN origin in the
+list if you still want to use the app over the LAN.
 
 ## Manual deployment of the tunnel without Ansible
 
