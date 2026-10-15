@@ -9,7 +9,8 @@ through it on the Pi in order and tell me where it differs.
 - Run as its own user, `ghrunner`: no password, no shell login, not in the `sudo` group.
 - Write to `/srv/jifunze/releases`, `incoming`, `data` and `backups` through the `jifunze` group
   (deploy.sh unpacks releases, backs up and migrates the database as this user).
-- `sudo` for exactly one command: `systemctl restart jifunze.service`.
+- `sudo` for exactly two commands, both on the one service: `systemctl restart jifunze.service` and
+  `systemctl reset-failed jifunze.service`.
 - Run **only** the `deploy` job. CI runs on GitHub's hosted runners, never here.
 
 **The repository is public, so a self-hosted runner is only safe if no untrusted code can reach it.** `deploy.yml` is triggered only by a published release or a manual run (both need write access), never by a pull request, and must stay that way. Also set Settings -> Actions -> General -> Fork pull request workflows to "Require approval for all external contributors".
@@ -51,7 +52,7 @@ database. That is why the repository is private, the job needs `production` appr
    service user to lose it (the app itself never calls sudo):
    ```
    sudo visudo -f /etc/sudoers.d/jifunze-runner
-   ghrunner ALL=(root) NOPASSWD: /usr/bin/systemctl restart jifunze.service
+   ghrunner ALL=(root) NOPASSWD: /usr/bin/systemctl restart jifunze.service, /usr/bin/systemctl reset-failed jifunze.service
    ```
    `deploy/rollback.sh` uses the same single command.
 5. Register the runner. In GitHub: repository **Settings -> Actions -> Runners -> New self-hosted
@@ -77,7 +78,8 @@ database. That is why the repository is private, the job needs `production` appr
 
 - GitHub shows the runner **Idle** under Settings -> Actions -> Runners.
 - `sudo -u ghrunner sudo -n systemctl restart jifunze.service` works; the same with
-  `systemctl stop jifunze.service` or `sudo -n true` asks for a password and fails.
+  `systemctl stop jifunze.service` or `sudo -n true` asks for a password and fails. Also check
+  `sudo -u ghrunner sudo -n systemctl reset-failed jifunze.service` (it prints nothing and succeeds).
 - `sudo -u ghrunner id` lists the `jifunze` group but not `sudo`.
 - The runner can write everywhere `deploy.sh` writes (each line must print nothing and succeed):
   `for d in . releases incoming data backups; do sudo -u ghrunner sh -c "touch /srv/jifunze/$d/.t && rm /srv/jifunze/$d/.t" || echo "ghrunner cannot write /srv/jifunze/$d"; done`

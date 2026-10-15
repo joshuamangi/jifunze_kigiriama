@@ -96,11 +96,13 @@ Run commands on the Pi (`ssh <your-user>@<pi-ip>`) unless it says "on your Mac".
    /srv/jifunze/backups /mnt/ssd` before unplugging**, or exFAT may be flagged dirty
    (`sudo fsck.exfat /dev/sda1` fixes that). The backup job refuses to run if the SSD is not
    mounted, so it never fills the SD card.
-7. **Let the deploy user restart the one service, and nothing else.** Create
+7. **Let the deploy user restart the one service (and clear its failed state), and nothing else.** Create
    `/etc/sudoers.d/jifunze` with `sudo visudo -f /etc/sudoers.d/jifunze`:
    ```
-   jifunze ALL=(root) NOPASSWD: /usr/bin/systemctl restart jifunze.service
+   jifunze ALL=(root) NOPASSWD: /usr/bin/systemctl restart jifunze.service, /usr/bin/systemctl reset-failed jifunze.service
    ```
+   `reset-failed` matters after a release that crashes on start: systemd gives up after five tries and
+   refuses further starts, including the rollback's, until it is cleared (`deploy/lib.sh` does it).
    (`deploy.sh` runs as `jifunze` for manual deploys. The GitHub runner uses its own user: see `docs/RUNNER_SETUP.md`.)
 
 ## B. The first release

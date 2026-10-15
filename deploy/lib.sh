@@ -10,8 +10,10 @@ ENV_FILE="${JIFUNZE_ENV_FILE:-/etc/jifunze/jifunze.env}"
 SERVICE="${JIFUNZE_SERVICE:-jifunze.service}"
 SOCKET="${JIFUNZE_SOCKET:-/run/jifunze/app.sock}"
 KEEP_RELEASES="${JIFUNZE_KEEP_RELEASES:-5}"
-# The one privileged command the deploy user may run (see docs/PI_SETUP.md, sudoers).
-read -r -a SYSTEMCTL_CMD <<<"${JIFUNZE_SYSTEMCTL:-sudo systemctl}"
+# The only privileged commands the deploy user may run: `systemctl restart` and
+# `systemctl reset-failed` on this one service (see docs/PI_SETUP.md, sudoers). -n: never wait for a
+# password, so a missing sudo rule fails at once instead of hanging a deploy.
+read -r -a SYSTEMCTL_CMD <<<"${JIFUNZE_SYSTEMCTL:-sudo -n systemctl}"
 
 DRY_RUN=0
 
@@ -53,5 +55,9 @@ atomic_link() {
 }
 
 restart_service() {
+  # A release that crashes on start makes systemd give up after StartLimitBurst tries ("start
+  # request repeated too quickly") and refuse every later start, including the rollback's. Clearing
+  # that state first is harmless on a healthy unit. Not fatal: an older sudo rule may lack it.
+  run "${SYSTEMCTL_CMD[@]}" reset-failed "$SERVICE" || log "note: could not reset-failed $SERVICE"
   run "${SYSTEMCTL_CMD[@]}" restart "$SERVICE"
 }

@@ -68,3 +68,26 @@ def test_the_runner_can_switch_current_in_the_base_directory():
     tasks = (ANSIBLE / "roles" / "jifunze_user" / "tasks" / "main.yml").read_text()
     assert re.search(r"""path: "\{\{ base_dir \}\}", mode: "\{\{ '2775' if runner_enabled""", tasks)
     assert "chmod 2775 /srv/jifunze\n" in (ROOT / "docs" / "RUNNER_SETUP.md").read_text()
+
+
+SUDO_RULE_FILES = [
+    ANSIBLE / "roles" / "jifunze_user" / "tasks" / "main.yml",
+    ANSIBLE / "roles" / "runner_prereqs" / "tasks" / "main.yml",
+    ROOT / "docs" / "PI_SETUP.md",
+    ROOT / "docs" / "RUNNER_SETUP.md",
+]
+
+
+@pytest.mark.parametrize("path", SUDO_RULE_FILES, ids=lambda p: p.name)
+def test_every_sudo_rule_allows_exactly_restart_and_reset_failed_of_the_one_service(path):
+    """deploy/lib.sh runs `systemctl reset-failed` and `systemctl restart` on jifunze.service; the
+    sudo rule (the roles that write it and the docs that describe it) must allow those two and
+    nothing broader."""
+    rules = [ln for ln in path.read_text().splitlines() if "NOPASSWD:" in ln]
+    assert rules, f"no sudo rule found in {path.name}"
+    for rule in rules:
+        allowed = [c.strip() for c in rule.split("NOPASSWD:", 1)[1].split(",")]
+        assert sorted(allowed) == [
+            "/usr/bin/systemctl reset-failed jifunze.service",
+            "/usr/bin/systemctl restart jifunze.service",
+        ], rule
