@@ -1,5 +1,5 @@
 ---
-# Non-secret settings. Secrets live in secrets.sops.yaml. Anything marked REQUIRED must be set
+# Non-secret settings. Secrets live in secrets.sops.yaml. Anything marked REQUIRED must be se
 # (here or in the inventory) before the playbook will change anything.
 
 # --- machine and access ---------------------------------------------------------------------------
@@ -30,7 +30,7 @@ runner_user: ghrunner
 allowed_origins: ["https://kigiriama.techjamaa.com", "http://192.168.1.121:8080", "http://localhost:8080"] # REQUIRED
 app_base_url: "https://kigiriama.techjamaa.com" # REQUIRED: one of the above, e.g. "http://192.168.1.121:8080"
 jifunze_hostname: "kigiriama.techjamaa.com" # only for the tunnel (cloudflared_enabled): e.g. jifunze.example.com
-reminder_backend: console     # "smtp" once smtp_host, smtp_user, smtp_from and the secret are set
+reminder_backend: console     # "smtp" once smtp_host, smtp_user, smtp_from and the secret are se
 app_timezone: Africa/Nairobi
 alert_email: ""
 smtp_host: ""
@@ -39,13 +39,13 @@ smtp_user: ""
 smtp_from: ""
 
 # --- Cloudflare Tunnel (docs/CLOUDFLARE_SETUP.md) --------------------------------------------------
-cloudflared_enabled: true     # turn on once the tunnel and credentials exist
+cloudflared_enabled: true     # turn on once the tunnel and credentials exis
 cloudflared_tunnel_id: "3ed35e0e-daf1-41e7-90cf-5c6f6a3e49bb"     # UUID from `cloudflared tunnel create`
 cloudflared_version: "2026.10.0"       # a released version, e.g. 2025.x.y: look it up, do not guess
 cloudflared_deb_sha256: "7e0d76de3858b6396bd234ae26182bee222133398667d2647b90381d00c00e98" # sha256 of cloudflared-linux-arm64.deb
 
 # --- optional Cloudflare Access gate in the app (app/access.py) ------------------------------------
-cf_access_enabled: true 
+cf_access_enabled: true
 cf_access_team_domain: "icy-feather-f85d.cloudflareaccess.com"
 cf_access_aud: "dc86ae51371b5ec49f316a9c3eeba50403948081582f27b1a4c2bb9a9e99ab8a"  # public Access audience tag, not a secret (gitleaks:allow)
 

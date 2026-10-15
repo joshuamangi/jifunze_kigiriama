@@ -181,6 +181,56 @@ def test_existing_release_is_not_overwritten(box):
     assert "already exists" in result.stdout + result.stderr
 
 
+# root ignores directory permissions, so these two cannot fail there.
+needs_non_root = pytest.mark.skipif(os.geteuid() == 0, reason="root ignores directory permissions")
+
+
+@needs_non_root
+def test_a_failed_switch_leaves_current_and_previous_untouched(box):
+    """On the Pi the runner could not create files in /srv/jifunze (not group-writable) but could
+    still write the existing `previous` file: deploy.sh used to record the wrong previous release
+    before the symlink switch failed."""
+    for tag in ("v1", "v2", "v3"):
+        tarball(box, tag)
+    assert sh(box, "deploy.sh", "v1").returncode == 0
+    assert sh(box, "deploy.sh", "v2").returncode == 0
+    base = box["base"]
+    assert (base / "previous").read_text().strip() == "v1"
+    base.chmod(0o555)  # no new files in the base directory; existing files stay writable
+    try:
+        result = sh(box, "deploy.sh", "v3")
+    finally:
+        base.chmod(0o755)
+    assert result.returncode != 0
+    assert current(box) == "releases/v2"
+    assert (base / "previous").read_text().strip() == "v1"
+    assert not list(base.glob("current.new.*")) and not list(base.glob("previous.new.*"))
+    assert not (base / "releases" / "v3").exists()  # the unfinished release is cleaned up
+
+
+@needs_non_root
+def test_a_prune_that_cannot_remove_an_old_release_does_not_fail_a_live_deploy(box):
+    """Old releases made by another user may not be removable by the deploying user. The new release
+    is already live by then, so that must be a warning, not a failed deploy."""
+    box["env"]["JIFUNZE_KEEP_RELEASES"] = "1"
+    releases = box["base"] / "releases"
+    old = releases / "r1"
+    (old / "sub").mkdir(parents=True)
+    (old / "sub" / "file").write_text("x")
+    stamp = time.time() - 3600
+    os.utime(old, (stamp, stamp))
+    (old / "sub").chmod(0o500)  # rm -rf cannot unlink the file inside
+    tarball(box, "r2")
+    try:
+        result = sh(box, "deploy.sh", "r2")
+    finally:
+        (old / "sub").chmod(0o700)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert current(box) == "releases/r2"
+    assert "could not remove old release r1" in result.stdout + result.stderr
+    assert old.exists()
+
+
 def test_old_releases_are_pruned_but_current_and_previous_stay(box):
     box["env"]["JIFUNZE_KEEP_RELEASES"] = "2"
     releases = box["base"] / "releases"

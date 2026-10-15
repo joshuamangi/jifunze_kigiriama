@@ -60,3 +60,11 @@ def test_no_age_private_key_anywhere_in_infra_or_docs():
         for p in base.rglob("*"):
             if p.is_file() and p.suffix in {".yml", ".yaml", ".md", ".j2", ".tf", ".txt"}:
                 assert "AGE-SECRET-KEY-" not in p.read_text(), p
+
+
+def test_the_runner_can_switch_current_in_the_base_directory():
+    """deploy.sh creates `current.new.*` and `previous` in /srv/jifunze itself. The first v0.1.0
+    deploy failed with "Permission denied" because that directory was 0755 for the service user."""
+    tasks = (ANSIBLE / "roles" / "jifunze_user" / "tasks" / "main.yml").read_text()
+    assert re.search(r"""path: "\{\{ base_dir \}\}", mode: "\{\{ '2775' if runner_enabled""", tasks)
+    assert "chmod 2775 /srv/jifunze\n" in (ROOT / "docs" / "RUNNER_SETUP.md").read_text()
