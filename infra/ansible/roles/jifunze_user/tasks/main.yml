@@ -58,7 +58,7 @@
   ansible.builtin.copy:
     dest: /etc/sudoers.d/jifunze
     content: |
-      {{ service_user }} ALL=(root) NOPASSWD: /usr/bin/systemctl restart jifunze.service
+      {{ service_user }} ALL=(root) NOPASSWD: /usr/bin/systemctl restart jifunze.service, /usr/bin/systemctl reset-failed jifunze.service
     owner: root
     group: root
     mode: "0440"

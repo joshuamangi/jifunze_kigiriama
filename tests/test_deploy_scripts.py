@@ -38,9 +38,14 @@ def box(tmp_path):
     systemctl = stub(
         "systemctl",
         f'echo "systemctl $*" >> "{log}"\n'
+        # A release that crash-loops makes systemd give up ("start request repeated too quickly"):
+        # until `reset-failed`, every later restart is refused, including the rollback's.
+        f'limit="{tmp_path}/start-limit"\n'
+        f'if [ "$1" = reset-failed ]; then rm -f "$limit"; fi\n'
         f'if [ "$1" = restart ]; then\n'
+        f'  if [ -e "$limit" ]; then echo "Start request repeated too quickly." >&2; exit 1; fi\n'
         f'  case "$(readlink "{base}/current")" in\n'
-        f'    *bad*) echo down > "{health}" ;;\n'
+        f'    *bad*) echo down > "{health}"; : > "$limit" ;;\n'
         f'    *) echo \'{{"status":"ok"}}\' > "{health}" ;;\n'
         f"  esac\nfi\n",
     )
@@ -148,6 +153,28 @@ def test_deploy_backs_up_migrates_switches_and_records_previous(box):
     assert len(backups) == 2  # one before each deploy that found a database
     assert (box["base"] / "data" / "last_backup").exists()
     assert any("pip install" in c and "--require-hashes" in c for c in calls(box))
+
+
+def test_every_restart_clears_a_start_limit_failure_first(box):
+    """A crash-looping release leaves the unit in systemd's start-limit state. The restart after
+    it (a rollback, or the next deploy) is refused unless `reset-failed` runs first."""
+    tarball(box, "v1")
+    assert sh(box, "deploy.sh", "v1").returncode == 0
+    seen = calls(box)
+    i = seen.index("systemctl restart jifunze.service")
+    assert seen[i - 1] == "systemctl reset-failed jifunze.service"
+
+
+def test_rollback_after_a_crash_looping_release_brings_the_old_one_back(box):
+    tarball(box, "v1")
+    tarball(box, "v2-bad")
+    assert sh(box, "deploy.sh", "v1").returncode == 0
+    result = sh(box, "deploy.sh", "v2-bad")
+    assert result.returncode != 0
+    assert "the previous release is back" in result.stdout + result.stderr
+    assert current(box) == "releases/v1"
+    health = (box["tmp"] / "health.json").read_text()
+    assert '"ok"' in health  # the app is running again, not left refusing restarts
 
 
 def test_failed_health_check_rolls_back_to_the_previous_release(box):
@@ -264,7 +291,11 @@ def test_rollback_points_current_back_restarts_and_records_where_it_left(box):
     assert result.returncode == 0, result.stdout + result.stderr
     assert current(box) == "releases/a"
     assert (box["base"] / "previous").read_text().strip() == "b"
-    assert calls(box) == ["systemctl restart jifunze.service"]
+    # reset-failed first: a crash-looping release leaves the unit refusing starts until cleared
+    assert calls(box) == [
+        "systemctl reset-failed jifunze.service",
+        "systemctl restart jifunze.service",
+    ]
     assert sh(box, "rollback.sh").returncode == 0  # a second run rolls forward again
     assert current(box) == "releases/b"
 
