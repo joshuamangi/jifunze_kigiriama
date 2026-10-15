@@ -55,7 +55,9 @@ fi
 
 created=0
 switched=0
+previous_tmp="$BASE/previous.new.$$"
 cleanup() {
+  rm -f "$previous_tmp"
   # A release that never went live is removed, so the same tag can be retried.
   if [ "$created" = 1 ] && [ "$switched" = 0 ]; then
     log "cleaning up the unfinished release $release"
@@ -102,13 +104,19 @@ step "5/9 switch current -> releases/$tag"
 if [ "$DRY_RUN" = 1 ]; then
   log "[dry-run] record previous release, then atomic symlink switch"
 else
+  # The release being replaced is written to a temp file first and moved into `previous` only after
+  # `current` has switched, so a failed switch (say, a directory the deploying user cannot write
+  # to) leaves both `current` and `previous` exactly as they were.
   if [ -L "$BASE/current" ]; then
-    basename "$(readlink "$BASE/current")" >"$BASE/previous"
-  else
-    rm -f "$BASE/previous"
+    basename "$(readlink "$BASE/current")" >"$previous_tmp"
   fi
   atomic_link "releases/$tag" "$BASE/current"
   switched=1
+  if [ -f "$previous_tmp" ]; then
+    mv -f "$previous_tmp" "$BASE/previous"
+  else
+    rm -f "$BASE/previous"
+  fi
 fi
 
 step "6/9 restart $SERVICE"
@@ -136,7 +144,9 @@ else
   ls -1t "$BASE/releases" | tail -n +"$((KEEP_RELEASES + 1))" | while IFS= read -r old; do
     [ "$old" = "$live" ] || [ "$old" = "$prev" ] || {
       log "removing old release $old"
-      rm -rf "${BASE:?}/releases/$old"
+      # The new release is already live: a release folder this user cannot remove (made by another
+      # user) is a warning, not a failed deploy.
+      rm -rf "${BASE:?}/releases/$old" || log "could not remove old release $old (left in place)"
     }
   done
 fi

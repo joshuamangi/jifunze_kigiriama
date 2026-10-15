@@ -27,8 +27,9 @@
     group: "{{ service_user }}"
     mode: "{{ item.mode }}"
   loop:
-    - { path: "{{ base_dir }}", mode: "0755" }
-    # setgid and group-writable so the GitHub runner user (group jifunze) can deploy.
+    # setgid and group-writable so the GitHub runner user (group jifunze) can deploy. deploy.sh
+    # creates `current.new.*` and `previous` in the base directory itself, not only in releases/.
+    - { path: "{{ base_dir }}", mode: "{{ '2775' if runner_enabled | bool else '0755' }}" }
     - { path: "{{ base_dir }}/releases", mode: "{{ '2775' if runner_enabled | bool else '0755' }}" }
     - { path: "{{ base_dir }}/incoming", mode: "{{ '2775' if runner_enabled | bool else '0755' }}" }
     - { path: "{{ base_dir }}/data", mode: "{{ '2770' if runner_enabled | bool else '0750' }}" }

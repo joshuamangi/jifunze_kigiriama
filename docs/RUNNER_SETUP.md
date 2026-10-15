@@ -32,11 +32,18 @@ database. That is why the repository is private, the job needs `production` appr
 3. Let the group write where deploy.sh writes (the `jifunze` user keeps ownership; new files stay in
    the `jifunze` group because of the setgid bit):
    ```
+   sudo chmod 2775 /srv/jifunze
    cd /srv/jifunze
    sudo chmod 2775 releases incoming
    sudo chmod 2770 data backups
    sudo chmod g+rw data/* 2>/dev/null || true
    ```
+   The base directory itself needs it too: `deploy.sh` creates the `current` symlink and the
+   `previous` file there. Without it the first deploy dies at step 5/9 with
+   `ln: failed to create symbolic link '/srv/jifunze/current.new.NNN': Permission denied`.
+   Releases made by hand before the runner existed belong to `jifunze` and are not group-writable;
+   if you want the runner to be able to prune them later:
+   `sudo chmod -R g+w /srv/jifunze/releases/<old-release>`.
    The environment file (`/etc/jifunze/jifunze.env`, `root:jifunze`) is already group-readable.
    If `backups` is the exFAT mount, group write comes from the `uid=`/`gid=`/`umask=` options in
    `/etc/fstab` (PI_SETUP step 6), not from `chmod`; check `sudo -u ghrunner touch backups/.t`.
@@ -72,6 +79,8 @@ database. That is why the repository is private, the job needs `production` appr
 - `sudo -u ghrunner sudo -n systemctl restart jifunze.service` works; the same with
   `systemctl stop jifunze.service` or `sudo -n true` asks for a password and fails.
 - `sudo -u ghrunner id` lists the `jifunze` group but not `sudo`.
+- The runner can write everywhere `deploy.sh` writes (each line must print nothing and succeed):
+  `for d in . releases incoming data backups; do sudo -u ghrunner sh -c "touch /srv/jifunze/$d/.t && rm /srv/jifunze/$d/.t" || echo "ghrunner cannot write /srv/jifunze/$d"; done`
 - Memory: the runner idles at roughly 100 MB and the Pi has 2 GB. Watch `free -m` during the first
   real deploy; if it is tight, stop the runner between deploys (`sudo ./svc.sh stop`).
 

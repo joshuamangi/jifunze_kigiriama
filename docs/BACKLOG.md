@@ -41,31 +41,42 @@ change the stages there.
 ## Stage 9: GitHub Actions
 - [x] CI runs `make lint`, `make test`, `make audit-deps` (pip-audit), the secret scan and the front-end size budget (`.github/workflows/ci.yml`, written 2026-10-11, not yet run on GitHub).
 - [x] Stage 9 decision taken: the runner gets its own `ghrunner` user in group `jifunze` (docs/RUNNER_SETUP.md).
-- [ ] Push, open a test PR and confirm CI is green; then work through docs/RUNNER_SETUP.md on the Pi.
-- [ ] GitHub settings (see the Stage 9 report): `production` environment with required reviewers, fork PR approval, default workflow token read-only, runner restricted to this repo.
-- [ ] No ARM64 CI job: the repo is private, and GitHub's free ARM64 hosted runners are for public repos. The Pi deploy is the first ARM64 run.
+- [x] CI green on GitHub; RUNNER_SETUP worked through on the Pi (2026-10-14/15). It needed one fix
+      the docs had missed: `/srv/jifunze` itself must be group-writable (see "first deploy" below).
+- [x] GitHub settings, read back from the API on 2026-10-15: `production` has a required reviewer and only
+      tag `v*` may deploy; fork PR approval is "all external contributors"; default token is read-only;
+      the runner is registered to this repo only.
+- [ ] The repository is PUBLIC (the older notes said private). Decide: keep, or go private (environment
+      protection may need a paid plan then). Public also means GitHub's free ARM64 hosted runners are
+      available, so an ARM64 CI job is possible if wanted.
+- [ ] Protect `main` (require a pull request and the `test` check). Optional.
 - [ ] Checksum in the release only guards against corruption. Add artifact attestation if you want tamper-evidence.
 
 ## Stage 10: Cloudflare Tunnel, Access and infrastructure as code
-Written 2026-10-13 and validated on the Mac only. None of it has run against the Pi or Cloudflare.
-- [x] Access JWT middleware (`app/access.py`, `CF_ACCESS_*`), tested with a local key pair.
-- [x] `deploy/cloudflared/` config template and sandboxed unit.
-- [x] `infra/ansible/` (`ansible-lint --profile production` clean, `--syntax-check` passes).
-- [x] `infra/terraform/` (`terraform validate` passes against provider v5.27). Optional.
-- [x] `scripts/restore_drill.py` / `make restore-drill`; `docs/CLOUDFLARE_SETUP.md`,
-      `docs/RESTORE_DRILL.md`, `docs/GO_LIVE.md`.
-- [ ] Generate the age key, fill `.sops.yaml`, create `infra/ansible/secrets.sops.yaml`
-      (`infra/ansible/README.md`). Back up the private key.
-- [ ] Fill `group_vars/all.yml` and `inventory/hosts.yml`; run `ansible-playbook site.yml --check --diff`
-      against the Pi and read it. Likely surprises: the mount options on the exFAT SSD, the firewall
-      rule for your network, the `uv` path.
-- [ ] Cloudflare steps in `docs/CLOUDFLARE_SETUP.md` (tunnel, DNS, Access application, email allow-list).
-      Then `cloudflared_enabled`, and last `cf_access_enabled`.
-- [ ] Look up the cloudflared release and its sha256 (never guessed in the repo).
-- [ ] Restore drill from a real Pi backup, rollback rehearsal, and the rest of `docs/GO_LIVE.md`.
-- [ ] Decide whether Nginx should also check the Access token for static files (`auth_request`);
-      today those rely on Cloudflare Access at the edge only.
+Built 2026-10-13; applied to the Pi and Cloudflare 2026-10-14 to 16.
+- [x] Access JWT middleware (`app/access.py`, `CF_ACCESS_*`), tested with a local key pair; live since v0.1.0
+      (a request without a token gets 403, `/healthz` stays open).
+- [x] `deploy/cloudflared/` config and sandboxed unit; tunnel running on the Pi (4 connections), site
+      reachable at https://kigiriama.techjamaa.com only through Cloudflare Access.
+- [x] `infra/ansible/` applied (all roles, including SSH hardening and the nftables firewall), secrets in
+      `secrets.sops.yaml` (sops + age). Confirm the age private key (`~/.config/sops/age/keys.txt`) is
+      backed up outside this Mac: without it the secrets file cannot be opened.
+- [x] `infra/terraform/` written and validated, deliberately not used (the Cloudflare side was done by hand).
+- [x] `scripts/restore_drill.py` / `make restore-drill`; docs written.
+- [x] First deploy through GitHub Actions: v0.1.0 live on 2026-10-16 (after fixing the base-directory
+      permission; the first attempt failed safely at step 5/9 and left v0.0.2 running).
+- [x] Restore drill on a real Pi backup passed on 2026-10-16. That backup had 0 entries, so re-run it with
+      `--expect entries=<n>` once the dictionary has content.
+- [ ] Refusal test: an email that is NOT on the Access allow-list must not get in (`docs/GO_LIVE.md` section 4).
+- [ ] Login through Access still works with the app's own gate on (`CF_ACCESS_ENABLED=1`, live in v0.1.0).
+- [ ] Rollback rehearsal with a deliberately broken release (`docs/GO_LIVE.md` section 6).
+- [ ] Delete `~/.cloudflared/*.json`, `cert.pem` and `cert.pem.old-2025` from the Mac.
+- [ ] Off-device copy of the backups (`BACKUP_COPY_COMMAND`); the SSD is in the same Pi.
+- [ ] Decide whether Nginx should also check the Access token for static files (`auth_request`); today those
+      rely on Cloudflare Access at the edge only.
 - [ ] `ansible-pull` is documented but unrun; it needs sops installed on the Pi and puts the age key there.
+- [ ] Old releases v0.0.1 and v0.0.2 belong to `jifunze` and are not group-writable. The deploy script now
+      only warns if it cannot prune them; `sudo chmod -R g+w` on them lets the runner remove them.
 
 ## Yours to fill in (not code)
 - [ ] Noun classes and verb paradigms from Taylor's front matter, into the review file for
