@@ -33,6 +33,10 @@ jobs:
           cache-dependency-path: |
             pyproject.toml
             requirements.lock
+      # The front-end behaviour tests (tests/js) run in Node.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
       - name: Install (same layout as `make install`)
         run: |
           python -m venv .venv
