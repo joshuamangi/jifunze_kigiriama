@@ -91,3 +91,23 @@ def test_every_sudo_rule_allows_exactly_restart_and_reset_failed_of_the_one_serv
             "/usr/bin/systemctl reset-failed jifunze.service",
             "/usr/bin/systemctl restart jifunze.service",
         ], rule
+
+
+def test_group_vars_hold_no_email_address():
+    """The repository is public: the alert address, SMTP user and sender live in the encrypted
+    secrets file, never in group_vars."""
+    text = (ANSIBLE / "group_vars" / "all.yml").read_text()
+    assert not re.search(r"[\w.+-]+@[\w-]+(\.[\w-]+)+", text)
+
+
+def test_example_secrets_list_every_mail_key():
+    text = (ANSIBLE / "secrets.example.yaml").read_text()
+    for key in ("alert_email", "smtp_user", "smtp_from", "smtp_password"):
+        assert re.search(rf"^{key}:", text, re.M), key
+
+
+def test_the_app_role_refuses_an_smtp_backend_with_missing_mail_settings():
+    tasks = (ANSIBLE / "roles" / "jifunze_app" / "tasks" / "main.yml").read_text()
+    assert "reminder_backend == 'smtp'" in tasks
+    for var in ("alert_email", "smtp_host", "smtp_user", "smtp_from", "smtp_password"):
+        assert f"{var} | length > 0" in tasks, var

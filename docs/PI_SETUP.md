@@ -182,7 +182,7 @@ Run commands on the Pi (`ssh <your-user>@<pi-ip>`) unless it says "on your Mac".
     `sudo systemctl start jifunze-backup.service`; it must FAIL (and email you), not write to the
     SD card. Then `sudo mount /srv/jifunze/backups`.
 20. **Test the failure alert:** `sudo systemctl start jifunze-failure@jifunze-backup.service`.
-    You should get the email. If not, check `ALERT_EMAIL` and `SMTP_*` and
+    You should get the email (setting it up with Gmail: `docs/GO_LIVE.md` section 7). If not, check `ALERT_EMAIL` and `SMTP_*` and
     `journalctl -u 'jifunze-failure@*'`.
 21. **Sandbox check:** `systemd-analyze security jifunze.service` (a score; lower is tighter).
     If the app dies with `SIGSYS` or cannot read CPU info once the real model is on, loosen

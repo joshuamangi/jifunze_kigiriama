@@ -13,6 +13,21 @@
     mode: "0644"
   notify: Reload systemd
 
+- name: Mail settings must be complete when the backend is smtp
+  ansible.builtin.assert:
+    that:
+      - alert_email | length > 0
+      - smtp_host | length > 0
+      - smtp_user | length > 0
+      - smtp_from | length > 0
+      - smtp_password | length > 0
+    fail_msg: >-
+      reminder_backend is smtp, so alert_email, smtp_user, smtp_from and smtp_password must be set in
+      the encrypted secrets file (sops secrets.sops.yaml) and smtp_host in group_vars. See
+      docs/GO_LIVE.md section 7, or set reminder_backend to console to switch mail off.
+    quiet: true
+  when: reminder_backend == 'smtp'
+
 - name: Write the environment file
   ansible.builtin.template:
     src: jifunze.env.j2

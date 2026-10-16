@@ -100,7 +100,27 @@ Each line says how to check it. "Not run yet" items are rehearsals nobody has do
       the sudo rules allow exactly that verb. Without it this rehearsal ends in `ROLLBACK FAILED`.
 
 ## 7. Monitoring
-- [ ] The failure email arrives when a unit fails (PI_SETUP step 20).
+- [ ] **Failure alerts work.** Until this is done nobody is told when the app dies: the failure-alert
+      unit exits 1 with "ALERT_EMAIL is not set" (seen during the rollback rehearsal, 2026-10-16).
+      With Gmail:
+      1. Make an app password: Google Account, Security, 2-Step Verification (turn it on if it is off),
+         App passwords, name it `Jifunze Pi`, and copy the 16 letters (remove the spaces). It is shown once.
+      2. On the Mac: `cd infra/ansible && sops secrets.sops.yaml` and add four lines, then save:
+         ```
+         alert_email: you@gmail.com
+         smtp_user: you@gmail.com
+         smtp_from: you@gmail.com
+         smtp_password: abcdefghijklmnop
+         ```
+         They go in the *encrypted* file because this repository is public: no address may be committed
+         (a test checks `group_vars/all.yml` for one). `smtp_host` (smtp.gmail.com), the port and
+         `reminder_backend: smtp` are already in `group_vars/all.yml`.
+      3. `ansible-playbook site.yml --check --diff --tags app`, then without `--check`. The role stops with
+         a clear message if one of the five values is missing. The app restarts for a few seconds.
+      4. On the Pi: `sudo systemctl start jifunze-failure@jifunze-backup.service`, then
+         `systemctl show -p Result jifunze-failure@jifunze-backup.service` must say `Result=success` and
+         an email arrives (check spam the first time). The mail carries the last log lines of the unit,
+         which can mention usernames, so it only goes to your own address.
 - [ ] Optional but planned: Pi observability (`docs/BACKLOG.md`).
 
 ## After go-live
