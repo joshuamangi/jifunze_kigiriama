@@ -16,8 +16,10 @@ through it on the Pi in order and tell me where it differs.
 **The repository is public, so a self-hosted runner is only safe if no untrusted code can reach it.** `deploy.yml` is triggered only by a published release or a manual run (both need write access), never by a pull request, and must stay that way. Also set Settings -> Actions -> General -> Fork pull request workflows to "Require approval for all external contributors".
 
 Anyone who can run a workflow on this runner can run code as `ghrunner`, and so can change the live
-database. That is why the repository is private, the job needs `production` approval, and
-`deploy.yml` has no pull request trigger.
+database. That is why the job needs `production` approval, only tags `v*` may deploy to `production`,
+fork pull requests need approval, and `deploy.yml` has no pull request trigger. Because the
+repository is public, also keep Settings -> Collaborators to people you trust: write access is what
+lets someone publish a release and start a deploy.
 
 ## Install
 
