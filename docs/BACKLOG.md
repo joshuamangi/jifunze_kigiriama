@@ -67,9 +67,13 @@ Built 2026-10-13; applied to the Pi and Cloudflare 2026-10-14 to 16.
       permission; the first attempt failed safely at step 5/9 and left v0.0.2 running).
 - [x] Restore drill on a real Pi backup passed on 2026-10-16. That backup had 0 entries, so re-run it with
       `--expect entries=<n>` once the dictionary has content.
-- [ ] Refusal test: an email that is NOT on the Access allow-list must not get in (`docs/GO_LIVE.md` section 4).
-- [ ] Login through Access still works with the app's own gate on (`CF_ACCESS_ENABLED=1`, live in v0.1.0).
-- [ ] Rollback rehearsal with a deliberately broken release (`docs/GO_LIVE.md` section 6).
+- [x] Refusal test (2026-10-16): an email that is not on the Access allow-list is never sent a code.
+- [x] Login through Access works with the app's own gate on (checked after v0.1.0 went live).
+- [x] Rollback rehearsal passed 2026-10-16 (about 33 s outage). It found that a crash-looping release made
+      the rollback's restart fail (systemd start limit); fixed in v0.1.2 with `reset-failed` (#70).
+- [ ] Failure alerts do not work yet: `ALERT_EMAIL` is empty on the Pi, so `notify_failure.py` exits 1 and
+      nobody is told when the app dies. Gmail + app password chosen; see the alerts PR and `docs/GO_LIVE.md`
+      section 7.
 - [ ] Delete `~/.cloudflared/*.json`, `cert.pem` and `cert.pem.old-2025` from the Mac.
 - [ ] Off-device copy of the backups (`BACKUP_COPY_COMMAND`); the SSD is in the same Pi.
 - [ ] Decide whether Nginx should also check the Access token for static files (`auth_request`); today those

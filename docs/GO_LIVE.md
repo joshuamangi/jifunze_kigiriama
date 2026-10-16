@@ -30,46 +30,74 @@ Each line says how to check it. "Not run yet" items are rehearsals nobody has do
 - [ ] You tried to reach an admin page (Settings, then Review) as a normal member and were refused.
 
 ## 4. Cloudflare
-- [ ] Tunnel up: `systemctl status cloudflared` is active; `journalctl -u cloudflared -n 20` shows
+- [x] Tunnel up (2026-10-16): `systemctl status cloudflared` is active; `journalctl -u cloudflared -n 20` shows
       registered connections.
 - [ ] **Access, from outside your network** (phone on mobile data, private window):
-  - [ ] An address that is on the allow-list gets the email code and then the login page.
-  - [ ] An address that is **not** on the list is refused and receives nothing useful. Try a real
-        second email you control.
-  - [ ] `curl -si https://<hostname>/` without signing in does not return the app (a Cloudflare
+  - [x] An address that is on the allow-list gets the email code and then the login page.
+  - [x] An address that is **not** on the list is refused and receives nothing useful (2026-10-16:
+        a second address that is not on the list was never sent a code). Try a real second email you control.
+  - [x] `curl -si https://<hostname>/` without signing in does not return the app (a Cloudflare
         login or 403, never the Jifunze page).
-- [ ] The app's own gate: with `cf_access_enabled: true`, `curl -si https://<hostname>/healthz`
+- [x] The app's own gate (live since v0.1.0, 2026-10-16): with `cf_access_enabled: true`, `curl -si https://<hostname>/healthz`
       still answers (Access aside), and a request that reaches the app without the token gets 403.
       If you cannot test this from outside, `curl -si http://127.0.0.1:8080/api/me` on the Pi must be 403.
 - [ ] `ALLOWED_ORIGINS` is `https://<hostname>`; signing in and adding an entry works through the
-      public address.
+      public address. (Signing in through Access with the gate on is verified; adding an entry has
+      not been tried yet.)
 
 ## 5. Backups and restore
-- [ ] A backup has run: `sudo systemctl start jifunze-backup.service`, a new file is in
-      `/mnt/ssd/jifunze-backups`, and the System status screen shows the time.
-- [ ] **Restore drill passed once** on a real backup: `docs/RESTORE_DRILL.md`, with `--expect` counts
-      copied from the live app.
+- [x] A backup has run: the nightly timer and every deploy write a new file to
+      `/mnt/ssd/jifunze-backups` (seen 2026-10-16). Also look at the System status screen once.
+- [x] **Restore drill passed once** on a real backup (2026-10-16, `docs/RESTORE_DRILL.md`). That backup
+      had 0 entries, so it proved the mechanism, not real data: run it again with `--expect entries=<n>`
+      once the dictionary has content.
 - [ ] Off-device copy: `BACKUP_COPY_COMMAND` is set and a copy arrived on the other machine, or you
       have written down that you accept the SSD being on the same Pi.
 
 ## 6. Deploy and rollback
-- [ ] The runner is limited (`docs/RUNNER_SETUP.md` "Check it"): `sudo -u ghrunner sudo -n systemctl
-      restart jifunze.service` works; `sudo -u ghrunner sudo -n true` fails; `id ghrunner` shows
-      no `sudo` group.
-- [ ] GitHub settings: `production` environment has required reviewers, fork pull requests need
+- [x] The runner is limited (`docs/RUNNER_SETUP.md` "Check it"; verified 2026-10-16): `sudo -u ghrunner
+      sudo -n systemctl restart jifunze.service` and `... reset-failed jifunze.service` work;
+      `sudo -u ghrunner sudo -n true` and `... systemctl stop jifunze.service` fail; `id ghrunner`
+      shows no `sudo` group.
+- [x] GitHub settings (read back from the API 2026-10-15): `production` environment has required reviewers, fork pull requests need
       approval, the default token is read-only, the runner is limited to this repository. A deploy
       waits for your approval before it starts.
-- [ ] A normal deploy of the release went live (`deploy.sh` prints "release vX is live").
-- [ ] **Rollback rehearsal (not run yet):** prove a bad release leaves the old one running. On your
-      Mac, from a clean checkout of the release:
+- [x] A normal deploy of the release went live (v0.1.0, v0.1.1 and v0.1.2 on 2026-10-16;
+      `deploy.sh` prints "release vX is live").
+- [x] **Rollback rehearsal passed** (2026-10-16, v0.1.2 as the good release): a deliberately crashing
+      release left the old one running. The site was down for about 33 seconds. Procedure, so it can be
+      repeated after a change to `deploy/` or the unit files:
+
+      On the Mac, from a clean checkout (`vX.Y.Z` is the release that is live):
       ```
-      git archive --format=tar.gz -o bad.tar.gz HEAD app web migrations scripts deploy pyproject.toml requirements.lock
+      mkdir -p /tmp/rb/src
+      git archive vX.Y.Z app web migrations scripts deploy pyproject.toml requirements.lock | tar -x -C /tmp/rb/src
+      { echo 'raise RuntimeError("rollback rehearsal: deliberately broken")'; cat /tmp/rb/src/app/main.py; } > /tmp/rb/main.py
+      mv /tmp/rb/main.py /tmp/rb/src/app/main.py
+      COPYFILE_DISABLE=1 tar -czf /tmp/rb/jifunze-rollbacktest.tar.gz -C /tmp/rb/src app web migrations scripts deploy pyproject.toml requirements.lock
+      scp /tmp/rb/jifunze-rollbacktest.tar.gz <pi>:/tmp/
       ```
-      Unpack it, add the line `raise RuntimeError("rollback rehearsal")` at the top of `app/main.py`, repack
-      as `jifunze-vX.Y.Z-rollbacktest.tar.gz`, copy it to `/srv/jifunze/incoming/` on the Pi, and run
-      `sudo -u jifunze /srv/jifunze/current/deploy/deploy.sh vX.Y.Z-rollbacktest`. Expected: the health
-      check fails, `deploy.sh` rolls back, `readlink /srv/jifunze/current` is the previous release, the
-      site still works. Delete the test release folder afterwards.
+      Break `app/main.py`, not `app/__init__.py` or `app/migrate.py`: the migration step imports
+      `app.config` and `app.db` only, so the failure must come *after* the switch, where the rollback
+      lives. On the Pi, as `ghrunner` (the user the GitHub workflow deploys as):
+      ```
+      sudo install -o ghrunner -g jifunze -m 0664 /tmp/jifunze-rollbacktest.tar.gz /srv/jifunze/incoming/
+      sudo -u ghrunner /srv/jifunze/current/deploy/deploy.sh rollbacktest
+      ```
+      Expected: steps 1 to 4 pass; `5/9 switch`, `6/9 restart`, then `health check FAILED after 15
+      attempt(s)`, `health check failed: rolling back`, `rollback: current -> releases/vX.Y.Z`, `app: ok`,
+      and a last line `ERROR: release rollbacktest failed its health check; the previous release is back`
+      with a non-zero exit. That error is the pass condition. Then clean up (the rollback swapped
+      `previous`, so set it back to the release that was `previous` before):
+      ```
+      sudo -u ghrunner rm -rf /srv/jifunze/releases/rollbacktest /srv/jifunze/incoming/jifunze-rollbacktest.tar.gz
+      rm -f /tmp/jifunze-rollbacktest.tar.gz
+      echo vPREV | sudo -u ghrunner tee /srv/jifunze/previous
+      ```
+      Why the unit file and `deploy/lib.sh` matter here: a release that crashes on start makes systemd give
+      up after `StartLimitBurst=5` starts (about 20 seconds with `RestartSec=3`) and refuse every later
+      start, including the rollback's. `restart_service` therefore runs `systemctl reset-failed` first, and
+      the sudo rules allow exactly that verb. Without it this rehearsal ends in `ROLLBACK FAILED`.
 
 ## 7. Monitoring
 - [ ] The failure email arrives when a unit fails (PI_SETUP step 20).
