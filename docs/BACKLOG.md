@@ -46,10 +46,16 @@ change the stages there.
 - [x] GitHub settings, read back from the API on 2026-10-15: `production` has a required reviewer and only
       tag `v*` may deploy; fork PR approval is "all external contributors"; default token is read-only;
       the runner is registered to this repo only.
-- [ ] The repository is PUBLIC (the older notes said private). Decide: keep, or go private (environment
-      protection may need a paid plan then). Public also means GitHub's free ARM64 hosted runners are
-      available, so an ARM64 CI job is possible if wanted.
-- [ ] Protect `main` (require a pull request and the `test` check). Optional.
+- [x] The repository stays PUBLIC (decided 2026-10-16). What that exposes: the hostname, the Cloudflare tunnel
+      id, the Access team domain and audience tag, the Pi's LAN address and SSD UUID, and the age-encrypted
+      `secrets.sops.yaml`. None of these is a credential (Access and the age private key are what protect
+      the app and the secrets), but they map the setup. Rules that follow from it: never commit anything
+      readable that is secret or personal (tests check group_vars for email addresses and the secrets file
+      for plaintext), keep the age private key backed up outside the Mac, keep fork-PR approval on, keep
+      `deploy.yml` free of pull-request triggers, and keep the collaborator list short. Free ARM64 hosted
+      runners are available to public repos, so an ARM64 CI job is possible if wanted.
+- [x] `main` is protected by the ruleset `main_pullrequest` (pull request required, no force push, no bypass).
+      Optional: also require the `test` check to pass before merging.
 - [ ] Checksum in the release only guards against corruption. Add artifact attestation if you want tamper-evidence.
 
 ## Stage 10: Cloudflare Tunnel, Access and infrastructure as code
