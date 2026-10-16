@@ -320,3 +320,22 @@ def test_cloudflared_unit_is_sandboxed_and_not_the_app_user():
 
 def test_cloudflared_target_matches_the_nginx_listener():
     assert re.search(r"listen\s+127\.0\.0\.1:8080\b", (NGINX / "jifunze.conf").read_text())
+
+
+def test_documented_failure_alert_commands_pass_the_scripts_own_unit_check():
+    """`jifunze-failure@X.service` runs `notify_failure.py X`, which only accepts a full unit name
+    (`jifunze-backup.service`). OnFailure= passes %n, so the documented manual test needs that
+    instance: `jifunze-failure@jifunze-backup.service.service`."""
+    found = []
+    for doc in ("PI_SETUP.md", "GO_LIVE.md"):
+        text = (ROOT / "docs" / doc).read_text()
+        # Greedy: in `jifunze-failure@jifunze-backup.service.service` the instance is everything
+        # before the LAST `.service`.
+        found += [
+            (doc, name) for name in re.findall(r"jifunze-failure@([\w.:@-]+)\.service\b", text)
+        ]
+    assert found, "the docs no longer show a failure-alert test command"
+    for doc, instance in found:
+        assert notify_failure.UNIT.match(instance), (
+            f"{doc}: instance {instance!r} would be rejected"
+        )
