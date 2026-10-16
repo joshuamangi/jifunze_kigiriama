@@ -181,7 +181,9 @@ Run commands on the Pi (`ssh <your-user>@<pi-ip>`) unless it says "on your Mac".
 19. **Prove the unplugged-SSD guard:** `sudo umount /srv/jifunze/backups`, run
     `sudo systemctl start jifunze-backup.service`; it must FAIL (and email you), not write to the
     SD card. Then `sudo mount /srv/jifunze/backups`.
-20. **Test the failure alert:** `sudo systemctl start jifunze-failure@jifunze-backup.service`.
+20. **Test the failure alert:** `sudo systemctl start jifunze-failure@jifunze-backup.service.service`
+    (the instance is the full unit name, so it ends in `.service.service`; with one `.service` the script
+    prints its usage line and exits 2).
     You should get the email (setting it up with Gmail: `docs/GO_LIVE.md` section 7). If not, check `ALERT_EMAIL` and `SMTP_*` and
     `journalctl -u 'jifunze-failure@*'`.
 21. **Sandbox check:** `systemd-analyze security jifunze.service` (a score; lower is tighter).

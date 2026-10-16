@@ -117,8 +117,10 @@ Each line says how to check it. "Not run yet" items are rehearsals nobody has do
          `reminder_backend: smtp` are already in `group_vars/all.yml`.
       3. `ansible-playbook site.yml --check --diff --tags app`, then without `--check`. The role stops with
          a clear message if one of the five values is missing. The app restarts for a few seconds.
-      4. On the Pi: `sudo systemctl start jifunze-failure@jifunze-backup.service`, then
-         `systemctl show -p Result jifunze-failure@jifunze-backup.service` must say `Result=success` and
+      4. On the Pi: `sudo systemctl start jifunze-failure@jifunze-backup.service.service` (the
+         second `.service` is part of the instance name: the alert script wants the full unit name, as
+         `OnFailure=` passes it), then
+         `systemctl show -p Result jifunze-failure@jifunze-backup.service.service` must say `Result=success` and
          an email arrives (check spam the first time). The mail carries the last log lines of the unit,
          which can mention usernames, so it only goes to your own address.
 - [ ] Optional but planned: Pi observability (`docs/BACKLOG.md`).
