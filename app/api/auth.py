@@ -11,6 +11,7 @@ from app.auth.sessions import COOKIE_NAME, create_session, delete_session
 from app.config import Settings
 from app.db import Database
 from app.security import client_address
+from app.users import UserError, create_access_user, set_own_password
 
 router = APIRouter()
 
@@ -34,6 +35,9 @@ def login(
     db: Annotated[Database, Depends(get_db)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> dict:
+    if settings.cf_access_enabled:
+        # Cloudflare Access is the sign-in; a password endpoint would only be one more door.
+        raise HTTPException(status_code=404, detail="not found")
     passwords = request.app.state.passwords
     throttle = request.app.state.throttle
     address = client_address(request)
@@ -72,6 +76,59 @@ def login(
         COOKIE_NAME, token, max_age=settings.session_max_age_seconds, **_cookie_args(settings)
     )
     return {"id": user["id"], "username": user["username"], "role": user["role"]}
+
+
+@router.post("/api/access-login")
+def access_login(
+    request: Request,
+    response: Response,
+    db: Annotated[Database, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> dict:
+    """Sign in with the email Cloudflare Access verified; create the account on first visit.
+
+    Only reachable behind the gate: request.state.access_email is set from a verified token and
+    nowhere else, so nothing a client sends can name an email. `new` is true on the first visit,
+    so the app can offer the one-time "set a password" screen.
+    """
+    if not settings.cf_access_enabled:
+        raise HTTPException(status_code=404, detail="not found")
+    email = getattr(request.state, "access_email", "")
+    if not email:
+        raise HTTPException(status_code=401, detail="not authenticated")
+    try:
+        user = create_access_user(db, email)
+    except UserError:
+        raise HTTPException(status_code=401, detail="not authenticated") from None
+    with db.write() as conn:
+        token = create_session(conn, settings, user["id"])
+    audit.record(db, "login.access", request=request, actor=user)
+    response.set_cookie(
+        COOKIE_NAME, token, max_age=settings.session_max_age_seconds, **_cookie_args(settings)
+    )
+    return {k: user[k] for k in ("id", "username", "role", "new")}
+
+
+class PasswordBody(BaseModel):
+    password: str = Field(min_length=1, max_length=1024)
+
+
+@router.put("/api/me/password", status_code=204)
+def set_password(
+    body: PasswordBody,
+    request: Request,
+    user: Annotated[dict, Depends(require_user)],
+    db: Annotated[Database, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> Response:
+    try:
+        set_own_password(
+            db, request.app.state.passwords, user["id"], body.password, settings.password_min_length
+        )
+    except UserError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
+    audit.record(db, "user.password_set", request=request, actor=user)
+    return Response(status_code=204)
 
 
 @router.post("/api/logout", status_code=204)

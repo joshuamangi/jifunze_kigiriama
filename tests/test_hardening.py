@@ -25,6 +25,8 @@ PUBLIC, USER, ADMIN = "public", "user", "admin"
 AUTH_TABLE = {
     ("GET", "/healthz"): PUBLIC,
     ("POST", "/api/login"): PUBLIC,
+    ("POST", "/api/access-login"): PUBLIC,  # needs a verified Access token; 404 without the gate
+    ("PUT", "/api/me/password"): USER,
     ("POST", "/api/logout"): USER,
     ("GET", "/api/me"): USER,
     ("POST", "/api/entries"): USER,

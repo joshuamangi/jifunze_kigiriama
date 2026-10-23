@@ -212,6 +212,8 @@ def test_there_is_no_registration_route_and_public_routes_are_known(app):
     assert paths == {
         "/healthz",
         "/api/login",
+        "/api/access-login",
+        "/api/me/password",
         "/api/logout",
         "/api/me",
         "/api/entries",

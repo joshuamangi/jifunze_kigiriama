@@ -4,7 +4,8 @@ Cloudflare Access puts a signed token in the Cf-Access-Jwt-Assertion header afte
 passes the email allow-list. With CF_ACCESS_ENABLED=1 the app refuses anything without a valid
 token (RS256 signature from the team's published keys, issuer, audience, expiry), so traffic that
 reaches the machine around Access is rejected. /healthz stays open for the local health checks.
-The app login still applies afterwards: these are two separate gates.
+The verified email is kept on request.state.access_email; POST /api/access-login turns it into
+a session, so people who passed Access are signed in without a second password.
 """
 
 import logging
@@ -64,9 +65,12 @@ def install_access_gate(app: FastAPI) -> None:
         token = request.headers.get(HEADER)
         if token:
             try:
-                await run_in_threadpool(request.app.state.access_verifier.verify, token)
+                claims = await run_in_threadpool(request.app.state.access_verifier.verify, token)
             except jwt.PyJWTError as exc:
                 log.warning("access token rejected: %s", type(exc).__name__)
             else:
+                # Only set from a verified token. Service tokens carry no email claim.
+                email = claims.get("email")
+                request.state.access_email = email.strip() if isinstance(email, str) else ""
                 return await call_next(request)
         return JSONResponse({"detail": "access required"}, status_code=403)

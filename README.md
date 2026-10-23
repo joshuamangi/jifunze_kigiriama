@@ -36,7 +36,10 @@ make run                      # http://127.0.0.1:8000, reloads on code changes
 
 Notes:
 
-- `make create-user` asks for a password. There is no self sign-up: the admin creates every account.
+- `make create-user` asks for a password and is how you get a login in dev, where Cloudflare Access is off.
+  In production (`CF_ACCESS_ENABLED=1`) nobody types a password to sign in: whoever passes the Access
+  email allow-list gets an account on their first visit. Link your own account to your email, and
+  make it admin, with `make link-email NAME=yourname EMAIL=you@example.com ROLE=admin`.
 - `.env` defaults to `EMBEDDER=fake`, which needs no model download (Meaning search is then only
   approximate). To use the real model: `make download-model`, set `EMBEDDER=onnx` in `.env`, then
   `make reindex`.
