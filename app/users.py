@@ -85,7 +85,8 @@ def _username_from_email(email: str) -> str:
 
 def find_by_access_email(conn: sqlite3.Connection, email: str) -> sqlite3.Row | None:
     return conn.execute(
-        "SELECT id, username, role FROM users WHERE access_email = ? COLLATE NOCASE", (email,)
+        "SELECT id, username, role, disabled_at FROM users WHERE access_email = ? COLLATE NOCASE",
+        (email,),
     ).fetchone()
 
 
@@ -101,7 +102,7 @@ def create_access_user(db: Database, email: str) -> dict:
     with db.write() as conn:
         existing = find_by_access_email(conn, email)
         if existing is not None:
-            return {**dict(existing), "new": False}
+            return {**dict(existing), "new": False, "disabled": existing["disabled_at"] is not None}
         for n in range(1, 100):
             username = base if n == 1 else f"{base[:28]}{n}"
             try:
@@ -112,7 +113,13 @@ def create_access_user(db: Database, email: str) -> dict:
                 )
             except sqlite3.IntegrityError:
                 continue  # the username is taken; try the next
-            user = {"id": cur.lastrowid, "username": username, "role": "member", "new": True}
+            user = {
+                "id": cur.lastrowid,
+                "username": username,
+                "role": "member",
+                "new": True,
+                "disabled": False,
+            }
             break
         else:
             raise UserError("could not find a free username")
@@ -156,3 +163,25 @@ def link_access_email(db: Database, username: str, email: str, role: str | None 
         db, "user.link_email", target=f"user:{row['id']}", detail=f"{row['username']} {role or ''}"
     )
     return row["id"]
+
+
+def set_disabled(db: Database, access_email: str, disabled: bool) -> dict | None:
+    """Disable or re-enable the account that signs in with this email; None if there is none.
+
+    Disabling also deletes its sessions. Nothing else is touched: entries and progress stay.
+    """
+    with db.write() as conn:
+        row = conn.execute(
+            "SELECT id, username FROM users WHERE access_email = ? COLLATE NOCASE", (access_email,)
+        ).fetchone()
+        if row is None:
+            return None
+        if disabled:
+            conn.execute(
+                "UPDATE users SET disabled_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?",
+                (row["id"],),
+            )
+            conn.execute("DELETE FROM sessions WHERE user_id = ?", (row["id"],))
+        else:
+            conn.execute("UPDATE users SET disabled_at = NULL WHERE id = ?", (row["id"],))
+    return {"id": row["id"], "username": row["username"]}

@@ -51,7 +51,8 @@ def lookup_session(
     now = now or _now()
     row = conn.execute(
         "SELECT u.id, u.username, u.role, s.token_hash, s.last_seen_at, s.expires_at"
-        " FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?",
+        " FROM sessions s JOIN users u ON u.id = s.user_id"
+        " WHERE s.token_hash = ? AND u.disabled_at IS NULL",
         (hash_token(token),),
     ).fetchone()
     if row is None:

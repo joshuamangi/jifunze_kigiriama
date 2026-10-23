@@ -98,3 +98,25 @@ encrypted disk. Validated here with `terraform validate` against provider v5.27,
 - 502 from Cloudflare with the tunnel up: the app is down (`systemctl status jifunze`).
 - Everyone gets 403 and the page says "access required": `cf_access_*` values are wrong, see above.
 - Test the path from outside your network (phone on mobile data) before telling anyone.
+
+## Optional: invite people from the app (Settings, People)
+
+The admin can add or remove allowed emails in the app instead of the Cloudflare dashboard. The app
+edits one reusable Access policy through the Cloudflare API, and emails the invitee the app address
+(using the same `REMINDER_BACKEND`/`SMTP_*` and `APP_BASE_URL` as the study reminders).
+Written, **not yet run against Cloudflare**.
+
+1. In the Zero Trust dashboard, make sure the Allow policy on the Jifunze application is a
+   **reusable** policy (Access, Policies). Copy its id (the UUID in its URL) as `CF_ACCESS_POLICY_ID`.
+2. Copy your account id as `CF_ACCOUNT_ID`.
+3. Create an API token (My Profile, API Tokens, Custom token) with the single permission
+   **Account, Access: Apps and Policies, Edit**, limited to your account. This is `CF_API_TOKEN`.
+   It can change who may enter the app, so keep it in `sops` like the other secrets and never commit it.
+4. Set the three values in the app's environment and restart it. With none set, the People screen
+   says invites are not set up. Setting only some is refused at startup.
+
+Notes: Cloudflare replaces a policy on every change, so the app reads it first and writes it back
+whole; rules that are not a single email (a whole domain, a group) are kept and shown as a count.
+Running `terraform apply` from `infra/terraform/` would overwrite the list. Removing someone also
+disables their app account (entries and progress stay), because their current Cloudflare sign-in can
+last up to 24 hours; inviting them again re-enables it.
