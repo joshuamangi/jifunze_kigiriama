@@ -16,6 +16,7 @@ const SCREENS = {
   '/settings': () => import('./screens/settings.js'),
   '/review': () => import('./screens/review.js'),
   '/status': () => import('./screens/status.js'),
+  '/people': () => import('./screens/people.js'),
 };
 
 const NAV = [
@@ -26,7 +27,7 @@ const NAV = [
   ['/settings', 'Settings', 'settings'],
 ];
 // Review is reached from Settings, so it keeps the Settings tab highlighted.
-const NAV_PARENT = { '/review': '/settings', '/status': '/settings', '/study': '/learn' };
+const NAV_PARENT = { '/review': '/settings', '/status': '/settings', '/people': '/settings', '/study': '/learn' };
 
 const root = document.getElementById('app');
 const session = { user: null };
@@ -73,7 +74,7 @@ async function render() {
 
   if (!session.user && path !== '/login') return navigate('/login');
   if (session.user && path === '/login') return navigate('/home');
-  if (!SCREENS[path] || (['/review', '/status'].includes(path) && session.user.role !== 'admin')) return navigate(session.user ? '/home' : '/login');
+  if (!SCREENS[path] || (['/review', '/status', '/people'].includes(path) && session.user.role !== 'admin')) return navigate(session.user ? '/home' : '/login');
 
   const showNav = path !== '/login';
   root.replaceChildren(h('div', { class: 'app' }, h('main', { class: showNav ? 'screen' : 'screen no-nav' }, loading())));

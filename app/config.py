@@ -1,7 +1,7 @@
 """Settings read from environment variables only."""
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 DEV_SESSION_SECRET = "dev-only-insecure-secret"  # noqa: S105 - placeholder, rejected in prod
 
@@ -96,6 +96,16 @@ class Settings:
     cf_access_enabled: bool = False  # require a valid Cloudflare Access JWT on every request
     cf_access_team_domain: str = ""  # e.g. myteam.cloudflareaccess.com (issuer and key set)
     cf_access_aud: str = ""  # the Access application's audience tag
+    # In-app invites (Settings, People). All three are needed; the token is an API token with only
+    # "Access: Apps and Policies Write". repr=False keeps it out of logs and tracebacks.
+    cf_api_token: str = field(default="", repr=False)
+    cf_account_id: str = ""
+    cf_access_policy_id: str = ""  # the reusable Access policy that holds the allowed emails
+    app_base_url: str = ""  # the public address put in invite emails
+
+    @property
+    def invites_enabled(self) -> bool:
+        return bool(self.cf_api_token and self.cf_account_id and self.cf_access_policy_id)
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> "Settings":
@@ -130,7 +140,20 @@ class Settings:
             cf_access_enabled=_bool(env.get("CF_ACCESS_ENABLED"), default=False),
             cf_access_team_domain=env.get("CF_ACCESS_TEAM_DOMAIN", "").strip().lower(),
             cf_access_aud=env.get("CF_ACCESS_AUD", "").strip(),
+            cf_api_token=env.get("CF_API_TOKEN", "").strip(),
+            cf_account_id=env.get("CF_ACCOUNT_ID", "").strip(),
+            cf_access_policy_id=env.get("CF_ACCESS_POLICY_ID", "").strip(),
+            app_base_url=env.get("APP_BASE_URL", "").strip().rstrip("/"),
         )
+        invite_settings = (
+            settings.cf_api_token,
+            settings.cf_account_id,
+            settings.cf_access_policy_id,
+        )
+        if any(invite_settings) and not all(invite_settings):
+            raise ConfigError(
+                "invites need CF_API_TOKEN, CF_ACCOUNT_ID and CF_ACCESS_POLICY_ID together"
+            )
         if settings.cf_access_enabled and not (
             settings.cf_access_team_domain and settings.cf_access_aud
         ):

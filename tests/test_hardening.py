@@ -47,6 +47,9 @@ AUTH_TABLE = {
     ("POST", "/api/review/{entry_id}/approve"): ADMIN,
     ("POST", "/api/review/{entry_id}/decline"): ADMIN,
     ("GET", "/api/admin/status"): ADMIN,
+    ("GET", "/api/admin/people"): ADMIN,
+    ("POST", "/api/admin/people"): ADMIN,
+    ("POST", "/api/admin/people/remove"): ADMIN,
 }
 
 
