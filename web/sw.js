@@ -1,6 +1,6 @@
 // Service worker: keeps the app shell available offline.
 // It never touches the API: /api responses are not cached, so data is always live or an error.
-const CACHE = 'jifunze-shell-v3';
+const CACHE = 'jifunze-shell-v4';
 const SHELL = [
   '/',
   '/css/theme.css',
@@ -17,6 +17,7 @@ const SHELL = [
   '/js/theme.js',
   '/js/ui.js',
   '/js/screens/login.js',
+  '/js/screens/welcome.js',
   '/js/screens/home.js',
   '/js/screens/add.js',
   '/js/screens/learn.js',

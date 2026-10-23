@@ -63,6 +63,7 @@ def test_only_the_named_indexes_exist(conn):
         "idx_user_progress_due",
         "idx_review_log_user_day",
         "idx_audit_action",
+        "idx_users_access_email",
     }
 
 

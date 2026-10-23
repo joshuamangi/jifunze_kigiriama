@@ -70,7 +70,7 @@ export async function api(method, path, body) {
     }
     throw new OfflineError("You're offline, or the server can't be reached.");
   }
-  if (response.status === 401 && path !== '/api/login') {
+  if (response.status === 401 && path !== '/api/login' && path !== '/api/access-login') {
     onUnauthorized();
     throw new ApiError(401, 'Please sign in again.');
   }

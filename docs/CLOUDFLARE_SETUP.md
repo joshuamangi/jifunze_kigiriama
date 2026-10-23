@@ -59,7 +59,9 @@ either value; the playbook refuses to run with an empty or malformed checksum.
 
 Turn on `cf_access_enabled` **last**, after you have seen the site through the tunnel working: with it on,
 the app answers 403 to any request without a valid Access token, so a wrong team domain or AUD locks
-everyone out (fix: set it back to `false` and run the `app` role again). `/healthz` stays open for
+everyone out (fix: set it back to `false` and run the `app` role again). With it on, people are
+signed in to the app from the email in the Access token and the password login is switched off;
+link your own account first with `make link-email` (see `docs/GO_LIVE.md` section 3). `/healthz` stays open for
 the local health check. Nginx serves the static files in `web/` itself; those are protected by
 Access at Cloudflare's edge, not by the app check.
 

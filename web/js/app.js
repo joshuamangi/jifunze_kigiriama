@@ -1,12 +1,13 @@
 // Boot, hash router and the shell (bottom navigation). Each screen is a module that exports
 // a default async function returning its root element.
-import { get, OfflineError, setUnauthorizedHandler } from './api.js';
+import { get, OfflineError, post, setUnauthorizedHandler } from './api.js';
 import { icon } from './icons.js';
 import { initTheme } from './theme.js';
 import { errorBanner, h, loading } from './ui.js';
 
 const SCREENS = {
   '/login': () => import('./screens/login.js'),
+  '/welcome': () => import('./screens/welcome.js'),
   '/home': () => import('./screens/home.js'),
   '/add': () => import('./screens/add.js'),
   '/learn': () => import('./screens/learn.js'),
@@ -90,17 +91,36 @@ async function render() {
 
 function setUser(user) { session.user = user; }
 
+// Behind Cloudflare Access the verified email is the sign-in: ask the server for a session, which it
+// creates (or finds) from the Access token. Without Access the server answers 404, and so does a
+// failure of any other kind, so the password login page is the fallback. Returns true if signed in.
+async function signInWithAccess() {
+  try {
+    const user = await post('/api/access-login');
+    session.user = { id: user.id, username: user.username, role: user.role };
+    // A brand-new account gets the one-time "set a password" screen before Home.
+    if (user.new) location.hash = '#/welcome';
+    return true;
+  } catch (error) {
+    if (error instanceof OfflineError) throw error;
+    return false;
+  }
+}
+
 async function boot() {
   initTheme();
-  setUnauthorizedHandler(() => {
+  setUnauthorizedHandler(async () => {
     session.user = null;
-    navigate('/login');
+    // A session that ran out is replaced silently, so nobody is sent to a password page.
+    if (await signInWithAccess().catch(() => false)) render();
+    else navigate('/login');
   });
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => { /* the app works without it */ });
   }
   try {
     await loadUser();
+    if (!session.user) await signInWithAccess();
   } catch (error) {
     root.replaceChildren(h('div', { class: 'app' }, h('main', { class: 'screen no-nav' }, errorBanner(error, () => location.reload()))));
     return;

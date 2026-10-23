@@ -25,8 +25,11 @@ Each line says how to check it. "Not run yet" items are rehearsals nobody has do
 ## 3. Accounts
 - [ ] Your admin account exists (`scripts/create_user.py --role admin`, PI_SETUP step 14) and you can
       sign in. `PASSWORD_MIN_LENGTH` is 12 or more.
-- [ ] Other accounts are created by you for each person; there is no sign-up. Anyone who forgets a
-      password gets `scripts/reset_password.py` (PI_SETUP section E).
+- [ ] Your admin account is linked to your email before you turn the Access check on:
+      `make link-email NAME=yourname EMAIL=you@example.com ROLE=admin`. Otherwise your first visit
+      creates a separate empty member account.
+- [ ] To let someone in, add their email to the Cloudflare Access policy. Their account is created
+      when they first pass the email check; you create nothing by hand.
 - [ ] You tried to reach an admin page (Settings, then Review) as a normal member and were refused.
 
 ## 4. Cloudflare
@@ -126,6 +129,7 @@ Each line says how to check it. "Not run yet" items are rehearsals nobody has do
 - [ ] Optional but planned: Pi observability (`docs/BACKLOG.md`).
 
 ## After go-live
-Tell the group the address and give each person their username and the password you set. The app
-has no self-service password change, so a new password means `scripts/reset_password.py` run by you.
+Tell the group the address. Each person receives a one-time PIN from Cloudflare at their email, and
+after that they go straight to Home. There are no passwords to hand out. Anyone who set an optional
+password can only use it if Access is switched off, so `scripts/reset_password.py` is rarely needed.
 Note the go-live date here.
