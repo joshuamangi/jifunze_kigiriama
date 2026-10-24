@@ -255,3 +255,68 @@ def test_partial_cloudflare_settings_are_refused_at_startup():
 def test_the_api_token_never_appears_in_the_settings_repr():
     full = {"CF_API_TOKEN": "super-secret-token", "CF_ACCOUNT_ID": "a", "CF_ACCESS_POLICY_ID": "p"}
     assert "super-secret-token" not in repr(Settings.from_env(full))
+
+
+# ---- roles --------------------------------------------------------------------------------
+def _give_access_email(world, make_user, username, email):
+    make_user(username)
+    with world.db.write() as conn:
+        conn.execute("UPDATE users SET access_email = ? WHERE username = ?", (email, username))
+
+
+def test_promote_and_demote(world, make_user, app):
+    _give_access_email(world, make_user, "amina", "amina@example.com")
+    amina = TestClient(app, headers=GUARD_HEADERS)
+    assert login(amina, "amina").status_code == 200
+    assert amina.get("/api/review").status_code == 403
+    r = world.admin.post(
+        "/api/admin/people/role", json={"email": "Amina@Example.com", "role": "admin"}
+    )
+    assert r.json() == {"email": "Amina@Example.com", "username": "amina", "role": "admin"}
+    assert amina.get("/api/review").status_code == 200  # takes effect without signing in again
+    world.admin.post(
+        "/api/admin/people/role", json={"email": "amina@example.com", "role": "member"}
+    )
+    assert amina.get("/api/review").status_code == 403
+
+
+def test_role_must_be_admin_or_member(world, make_user):
+    _give_access_email(world, make_user, "amina", "amina@example.com")
+    for bad in ("owner", "", "ADMIN"):
+        r = world.admin.post(
+            "/api/admin/people/role", json={"email": "amina@example.com", "role": bad}
+        )
+        assert r.status_code == 422
+
+
+def test_cannot_change_your_own_role(world):
+    r = world.admin.post(
+        "/api/admin/people/role", json={"email": "owner@example.com", "role": "member"}
+    )
+    assert r.status_code == 409
+
+
+def test_someone_who_has_not_signed_in_has_no_role_to_change(world):
+    r = world.admin.post(
+        "/api/admin/people/role", json={"email": "nobody@example.com", "role": "admin"}
+    )
+    assert r.status_code == 404
+
+
+def test_members_cannot_change_roles(world, login_as, make_user):
+    _give_access_email(world, make_user, "amina", "amina@example.com")
+    member = login_as("baraka")
+    r = member.post("/api/admin/people/role", json={"email": "baraka@example.com", "role": "admin"})
+    assert r.status_code == 403
+    r = member.post("/api/admin/people/role", json={"email": "amina@example.com", "role": "admin"})
+    assert r.status_code == 403
+
+
+def test_role_changes_are_audited(world, make_user):
+    _give_access_email(world, make_user, "amina", "amina@example.com")
+    world.admin.post("/api/admin/people/role", json={"email": "amina@example.com", "role": "admin"})
+    with world.db.read() as conn:
+        row = conn.execute(
+            "SELECT detail, target FROM audit_log WHERE action = 'people.role'"
+        ).fetchone()
+    assert (row["detail"], row["target"]) == ("admin", "user:2")

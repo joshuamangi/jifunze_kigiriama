@@ -165,6 +165,20 @@ def link_access_email(db: Database, username: str, email: str, role: str | None 
     return row["id"]
 
 
+def set_role(db: Database, access_email: str, role: str) -> dict | None:
+    """Change the role of the account that signs in with this email; None if there is none."""
+    if role not in ROLES:
+        raise UserError("role must be 'admin' or 'member'")
+    with db.write() as conn:
+        row = conn.execute(
+            "SELECT id, username FROM users WHERE access_email = ? COLLATE NOCASE", (access_email,)
+        ).fetchone()
+        if row is None:
+            return None
+        conn.execute("UPDATE users SET role = ? WHERE id = ?", (role, row["id"]))
+    return {"id": row["id"], "username": row["username"], "role": role}
+
+
 def set_disabled(db: Database, access_email: str, disabled: bool) -> dict | None:
     """Disable or re-enable the account that signs in with this email; None if there is none.
 

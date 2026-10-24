@@ -50,6 +50,7 @@ AUTH_TABLE = {
     ("GET", "/api/admin/people"): ADMIN,
     ("POST", "/api/admin/people"): ADMIN,
     ("POST", "/api/admin/people/remove"): ADMIN,
+    ("POST", "/api/admin/people/role"): ADMIN,
 }
 
 
