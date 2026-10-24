@@ -306,6 +306,7 @@ def test_migration_0003_keeps_existing_data(tmp_path):
         "0003_learning.sql",
         "0004_audit.sql",
         "0005_access_email.sql",
+        "0006_user_disabled.sql",
     ]
     row = conn.execute("SELECT repetitions, interval, ease_factor FROM user_progress").fetchone()
     assert (row["repetitions"], row["interval"], row["ease_factor"]) == (0, 0, 2.5)

@@ -51,7 +51,8 @@ def login(
 
     with db.read() as conn:
         user = conn.execute(
-            "SELECT id, username, role, password_hash FROM users WHERE username = ? COLLATE NOCASE",
+            "SELECT id, username, role, password_hash FROM users"
+            " WHERE username = ? COLLATE NOCASE AND disabled_at IS NULL",
             (body.username,),
         ).fetchone()
     if user is None:
@@ -100,6 +101,9 @@ def access_login(
         user = create_access_user(db, email)
     except UserError:
         raise HTTPException(status_code=401, detail="not authenticated") from None
+    if user["disabled"]:
+        audit.record(db, "login.access_refused", request=request, actor=user)
+        raise HTTPException(status_code=403, detail="this account has been removed")
     with db.write() as conn:
         token = create_session(conn, settings, user["id"])
     audit.record(db, "login.access", request=request, actor=user)
