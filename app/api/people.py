@@ -2,7 +2,7 @@
 edits it through the Cloudflare API and keeps no copy. Removing someone also disables their account
 here, because their current Cloudflare sign-in can last up to a day."""
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -13,7 +13,7 @@ from app.config import Settings
 from app.db import Database
 from app.services.cloudflare import AccessPolicyClient, CloudflareError
 from app.services.invites import send_invite
-from app.users import EMAIL_RE, set_disabled
+from app.users import EMAIL_RE, set_disabled, set_role
 
 router = APIRouter()
 
@@ -23,6 +23,10 @@ Db = Annotated[Database, Depends(get_db)]
 
 class EmailBody(BaseModel):
     email: str = Field(min_length=3, max_length=254)
+
+
+class RoleBody(EmailBody):
+    role: Literal["admin", "member"]
 
 
 def _client(request: Request) -> AccessPolicyClient:
@@ -125,3 +129,27 @@ def remove(body: EmailBody, admin: Admin, db: Db, request: Request) -> dict:
         detail=f"removed={removed}",
     )
     return {"email": email, "removed": removed, "had_account": account is not None}
+
+
+@router.post("/api/admin/people/role")
+def change_role(body: RoleBody, admin: Admin, db: Db, request: Request) -> dict:
+    """Make someone an admin or a member. They must have signed in once, so they have an account."""
+    email = _email(body)
+    with db.read() as conn:
+        mine = conn.execute(
+            "SELECT access_email FROM users WHERE id = ?", (admin["id"],)
+        ).fetchone()
+    if mine and mine["access_email"] and mine["access_email"].lower() == email.lower():
+        raise HTTPException(status_code=409, detail="you cannot change your own role")
+    account = set_role(db, email, body.role)
+    if account is None:
+        raise HTTPException(status_code=404, detail="they have not signed in yet")
+    audit.record(
+        db,
+        "people.role",
+        request=request,
+        actor=admin,
+        target=f"user:{account['id']}",
+        detail=body.role,
+    )
+    return {"email": email, "username": account["username"], "role": body.role}

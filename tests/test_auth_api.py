@@ -233,6 +233,7 @@ def test_there_is_no_registration_route_and_public_routes_are_known(app):
         "/api/admin/status",
         "/api/admin/people",
         "/api/admin/people/remove",
+        "/api/admin/people/role",
     }
 
 

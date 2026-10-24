@@ -47,11 +47,31 @@ export default async function people() {
         toast(error.message, 'error');
       }
     });
+    const makeAdmin = person.role !== 'admin';
+    const role = h('button', { class: 'btn', type: 'button' }, makeAdmin ? 'Make admin' : 'Make member');
+    let roleArmed = false;
+    role.addEventListener('click', async () => {
+      if (!roleArmed) {
+        roleArmed = true;
+        role.textContent = 'Tap again to confirm';
+        setTimeout(() => { roleArmed = false; role.textContent = makeAdmin ? 'Make admin' : 'Make member'; }, 4000);
+        return;
+      }
+      role.disabled = true;
+      try {
+        await post('/api/admin/people/role', { email: person.email, role: makeAdmin ? 'admin' : 'member' });
+        toast(makeAdmin ? 'They are now an admin.' : 'They are now a member.');
+        await reload();
+      } catch (error) {
+        role.disabled = false;
+        toast(error.message, 'error');
+      }
+    });
     return h(
       'article',
       { class: 'card' },
       h('div', { class: 'row-between' }, h('div', { class: 'entry-main' }, h('div', { class: 'strong' }, person.email), h('div', { class: 'small muted' }, person.is_you ? 'You' : status)), person.role === 'admin' ? h('span', { class: 'pill' }, 'Admin') : null),
-      person.is_you ? null : h('div', { class: 'row' }, remove),
+      person.is_you ? null : h('div', { class: 'row' }, person.signed_in_before ? role : null, remove),
     );
   }
 
