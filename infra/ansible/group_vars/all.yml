@@ -49,6 +49,12 @@ cf_access_enabled: true
 cf_access_team_domain: "icy-feather-f85d.cloudflareaccess.com"
 cf_access_aud: "dc86ae51371b5ec49f316a9c3eeba50403948081582f27b1a4c2bb9a9e99ab8a"  # public Access audience tag, not a secret (gitleaks:allow)
 
+# --- in-app invites (Settings > People; docs/CLOUDFLARE_SETUP.md, last section) ---------------------
+# All three live in the secret file (the repo is public). Leave them out and invites stay off.
+cf_api_token: ""               # SECRET FILE: API token, only "Access: Apps and Policies, Edit"
+cf_account_id: ""              # SECRET FILE: your Cloudflare account id
+cf_access_policy_id: ""        # SECRET FILE: id of the reusable Allow policy on the Jifunze application
+
 # --- app tuning copied into /etc/jifunze/jifunze.env -----------------------------------------------
 embedder: fake                # switch to onnx only after `make bench-embed` on the Pi
 embed_model: qint8
